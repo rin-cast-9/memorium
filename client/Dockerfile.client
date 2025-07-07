@@ -1,0 +1,27 @@
+# base
+FROM node:24-alpine AS base
+WORKDIR /app
+COPY package.json yarn.lock ./
+
+# deps
+FROM base AS deps 
+RUN yarn install
+
+# prod build
+FROM deps AS builder 
+COPY . .
+RUN yarn build
+
+# dev
+FROM deps AS dev
+COPY . . 
+EXPOSE 3000
+CMD ["yarn", "dev"] 
+
+# prod
+FROM nginx:alpine 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/build /usr/share/nginx/html
+EXPOSE 80

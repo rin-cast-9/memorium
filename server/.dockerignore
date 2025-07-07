@@ -1,0 +1,15 @@
+server-app
+*.exe
+*.out
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.log
+/tmp
+*.tmp
+*.test
+.env
+.env.local
