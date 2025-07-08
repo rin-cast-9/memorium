@@ -8,17 +8,26 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func Init() error {
+func Connect() (*gorm.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
-	fmt.Println(dsn)
-
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
 	if err != nil {
-		return fmt.Errorf("unable to connect to database: %w", err)
+		return nil, fmt.Errorf("failed to connect to db: %w", err)
 	}
 
-	DB = db
-	return nil
+	return db, nil
+}
+
+func Init() (*gorm.DB, error) {
+	db, err := Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := Migrate(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

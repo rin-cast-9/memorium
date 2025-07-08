@@ -14,9 +14,10 @@ RUN go build -o server-app ./cmd/app
 
 # dev
 FROM deps AS dev 
+RUN go install github.com/air-verse/air@latest
 COPY . .
 EXPOSE 8080
-CMD ["go", "run", "./cmd/app"]
+CMD ["air", "-c", ".air.toml"]
 
 # prod
 FROM alpine:latest
