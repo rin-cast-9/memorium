@@ -1,0 +1,69 @@
+import { AuthTabs } from "@/utils/AuthTabs";
+import Divider from "./Divider";
+import ValidatedInput from "./ValidatedInput";
+import PasswordInput from "./PasswordInput";
+import YandexAuthButton from "./YandexAuthButton";
+import Button from "./Button";
+import { ButtonSize, ButtonType } from "@/utils/Button.types";
+import { validateEmail } from "@/utils/validators";
+
+type LoginTabProps = {
+    email: string;
+    password: string;
+    setEmail: (v: string) => void;
+    setPassword: (v: string) => void;
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => void | Promise<void>;
+    loginError?: string | null;
+};
+
+const LoginTab = ({
+    email,
+    password,
+    setEmail,
+    setPassword,
+    onSubmit,
+    loginError,
+}: LoginTabProps) => {
+    return (
+        <div className="mt-[30px]">
+            <YandexAuthButton
+                activeTab={AuthTabs.SIGNUP}
+            />
+
+            <Divider/>
+
+            <form onSubmit={onSubmit}>
+                <div className="flex w-full gap-[20px] mt-[20px]">
+                    <ValidatedInput
+                        value={email}
+                        setValue={setEmail}
+                        validate={validateEmail}
+                        type="email"
+                        placeholder="Email"
+                        label="Email"
+                        serverError={loginError}
+                        showSuccess
+                    />
+                    <PasswordInput
+                        value={password}
+                        setValue={setPassword}
+                        placeholder="Password"
+                        label="Password"
+                        forgotPasswordLink="#"
+                        error={loginError ?? undefined}
+                    />
+                </div>
+                <div className="flex justify-center mt-[30px]">
+                    <Button
+                        label={"Log in"}
+                        size={ButtonSize.NORMAL}
+                        type={ButtonType.PRIMARY}
+                        htmlType="submit"
+                    />
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default LoginTab;

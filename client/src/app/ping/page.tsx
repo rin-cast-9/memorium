@@ -1,16 +1,23 @@
+"use client";
+
+import AuthForm from "@/components/AuthForm";
+import { apiUrl } from "@/utils/constants";
 import { useState } from "react";
 
-const API = import.meta.env.VITE_API_URL;
-
-const App = () => {
+const RegisterPage = () => {
     const [message, setMessage] = useState("");
     const [currentDB, setCurrentDB] = useState("");
 
     const fetchPing = async () => {
         try {
-            const res = await fetch(`${API}/ping`);
-            console.log(`${API}`);
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${apiUrl}/ping`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
             const data = await res.json();
+
             setMessage(data.message);
             setCurrentDB(data.database || "");
         }
@@ -35,4 +42,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default RegisterPage;

@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-white: #ffffff;
+  --color-grey: #847e94;
+  --color-stroke: #3c3844;
+  --color-black-1: #2c2938;
+  --color-black-2: #26222d;
+  --color-black-3: #1f1d24;
+  --color-black-4: #14121a;
+  --color-green-1: #57bb8f;
+  --color-green-border: #0fbe8c;
+  --color-red: #dc727b;
+  --color-error: #ff5d60;
+  --color-violet: #8b7ffd;
+
+  --font-size-h1: 34px;
+  --font-size-h2: 28px;
+  --font-size-h3: 22px;
+  --font-size-content: 18px;
+  --font-size-small-text: 14px;
+}
+
+@layer base {
+  body {
+    background: var(--color-black-4);
+    color: var(--color-white);
+    font-family: var(--font-rubik), Arial, Helvetica, sans-serif;
+  }
+}
+
+@layer components {
+  .font-h1 {
+    font-family: var(--font-rubik);
+    @apply text-[34px] font-[500];
+  }
+
+  .font-h2 {
+    font-family: var(--font-rubik);
+    @apply text-[28px];
+  }
+
+  .font-h3 {
+    font-family: var(--font-rubik);
+    @apply text-[22px];
+  }
+
+  .font-content {
+    font-family: var(--font-rubik);
+    @apply text-[18px]/[130%];
+  }
+
+  .font-bold-content {
+    font-family: var(--font-rubik);
+    @apply text-[18px] font-[500];
+  }
+
+  .font-small-text {
+    font-family: var(--font-rubik);
+    @apply text-[14px]/[130%];
+  }
+}
