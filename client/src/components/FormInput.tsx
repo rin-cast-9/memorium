@@ -5,8 +5,9 @@ type FormInputProps = {
     placeholder: string;
     value: string;
     onChange: ((e: React.ChangeEvent<HTMLInputElement>) => void);
-    error?: React.ReactNode;
+    error?: string;
     success?: boolean;
+    successMessage?: string;
     label?: string;
     icon?: React.ReactNode;
     onIconClick?: () => void;
@@ -22,6 +23,7 @@ const FormInput = ({
     onChange,
     error,
     success,
+    successMessage,
     label,
     icon,
     onIconClick,
@@ -78,6 +80,11 @@ const FormInput = ({
             {error && (
                 <span className="font-small-text text-[var(--color-error)]">
                     {error}
+                </span>
+            )}
+            {successMessage && (
+                <span className="font-small-text text-[var(--color-green-border)]">
+                    {successMessage}
                 </span>
             )}
         </div>

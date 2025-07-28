@@ -6,7 +6,7 @@ type EmailInputProps = {
     placeholder: string;
     value: string;
     onChange: ((e: React.ChangeEvent<HTMLInputElement>) => void);
-    error?: React.ReactNode;
+    error?: string;
     success?: boolean;
     label?: string;
 };
