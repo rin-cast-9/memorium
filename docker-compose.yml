@@ -14,6 +14,7 @@ services:
     build: 
       context: ./server
       dockerfile: ./Dockerfile.server
+      target: runner
     env_file:
       - ./.env.docker
     ports:
@@ -26,10 +27,11 @@ services:
     build: 
       context: ./client
       dockerfile: ./Dockerfile.client
+      target: runner
     env_file:
       - ./.env.docker
     ports:
-      - "80:80"
+      - "3000:3000"
     profiles: ["prod"]
 
   server-dev:
@@ -55,14 +57,15 @@ services:
     env_file:
       - ./.env.docker
     volumes:
-      - ./client/src:/app/src
-      - ./client/public:/app/public
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
+    restart: always
     ports:
       - "3000:3000"
     environment:
       - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      - db
+      - WATCHPACK_POLLING=true
     profiles: ["dev"]
 
 volumes:

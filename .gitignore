@@ -1,40 +1,48 @@
 # Node / React (client)
 node_modules/
 dist/
-dist-ssr
-*.local
+dist-ssr/
+.next/
+out/
 build/
-logs
-*.log
+coverage/
+*.local
 .env
-.env.local
+.env.*
 .vscode/
 !.vscode/extensions.json
 .idea/
 *.cache
-.yarn/*
+.yarn/
 !.yarn/releases
 !.yarn/plugins
 !.yarn/versions
+!.yarn/patches
 .yarnrc.yml
+.pnp/
 .pnp.*
-coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.pnpm-debug.log*
 lerna-debug.log*
+*.tsbuildinfo
+next-env.d.ts
 
 # Go (server)
 *.exe
 *.out
 *.test
 server-app
-/vendor/
-/tmp/
+vendor
+tmp
 
 # Docker
 *.env.docker
+
+# Vercel
+.vercel/
 
 # OS files
 .DS_Store
@@ -44,7 +52,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-
-# Misc
 *.swp
 *~
+
+# Misc
+*.pem

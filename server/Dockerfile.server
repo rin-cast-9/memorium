@@ -20,7 +20,7 @@ EXPOSE 8080
 CMD ["air", "-c", ".air.toml"]
 
 # prod
-FROM alpine:latest
+FROM alpine:latest AS runner
 WORKDIR /app
 COPY --from=builder /app/server-app .
 EXPOSE 8080
