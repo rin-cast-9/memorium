@@ -1,34 +1,33 @@
 package config
 
 import (
-	"log"
 	"os"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rin-cast-9/memorium/server/internal/shared"
+	"github.com/rin-cast-9/memorium/server/internal/util"
+	"go.uber.org/zap"
 )
 
-var (
-	jwtSecret string
-	once      sync.Once
-)
+var once sync.Once
 
 func Init() {
 	mode := os.Getenv("GIN_MODE")
-
 	if mode == "" {
 		mode = gin.DebugMode
 	}
 	gin.SetMode(mode)
 
-	once.Do(func() {
-		jwtSecret = os.Getenv("JWT_SECRET")
-		if jwtSecret == "" {
-			log.Fatal("JWT_SECRET env var not set")
-		}
-	})
-}
+	util.Logger.Info("Gin mode set", zap.String("mode", mode))
 
-func GetJWTSecret() string {
-	return jwtSecret
+	once.Do(func() {
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			util.Logger.Fatal("JWT_SECRET env var not set")
+		}
+
+		shared.JWTSecret = secret
+		util.Logger.Info("JWT_SECRET loaded (value not shown)")
+	})
 }

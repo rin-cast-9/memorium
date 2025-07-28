@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rin-cast-9/memorium/server/internal/config"
+	"github.com/rin-cast-9/memorium/server/internal/shared"
 )
 
 var jwtSecret []byte
 
 func init() {
-	jwtSecret = []byte(config.GetJWTSecret())
+	jwtSecret = []byte(shared.JWTSecret)
 }
 
 type Claims struct {
