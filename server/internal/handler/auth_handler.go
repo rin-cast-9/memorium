@@ -25,15 +25,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		util.Logger.Warn("Invalid register request", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid request"))
 		return
 	}
 
 	err := h.authService.Register(req.Email, req.FullName, req.Password)
 	if err != nil {
-		util.Logger.Warn("Registration failed", zap.String("email", req.Email), zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(c, err)
 		return
 	}
 
@@ -48,15 +46,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		util.Logger.Warn("Invalid login request", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid request"))
 		return
 	}
 
 	token, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
-		util.Logger.Warn("Login failed", zap.String("email", req.Email), zap.Error(err))
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		handleError(c, err)
 		return
 	}
 
