@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer";
 import PageLayout from "@/components/PageLayout";
 import AuthGuard from "./authGuard";
+import { getLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 
 const rubik = Rubik({
   subsets: ["latin", "cyrillic-ext"],
@@ -15,21 +16,25 @@ export const metadata: Metadata = {
   title: "Memorium",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body
         className={`${rubik.variable} antialiased`}
       >
-        <AuthGuard>
-          <PageLayout>
-            {children}
-          </PageLayout>
-        </AuthGuard>
+        <NextIntlClientProvider>
+          <AuthGuard>
+            <PageLayout>
+              {children}
+            </PageLayout>
+          </AuthGuard>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

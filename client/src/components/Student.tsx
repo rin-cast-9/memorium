@@ -1,8 +1,13 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
+import { useTranslations } from "next-intl";
 
 const Student = () => {
+    const t = useTranslations();
+
     const [showLogout, setShowLogout] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -32,10 +37,10 @@ const Student = () => {
             <div onClick={handleClick} className="flex items-center h-[42px] cursor-pointer select-none">
                 <div className="flex flex-col items-end justify-center">
                     <span className="font-small-text text-[var(--color-white)]/50">
-                        Student
+                        {t("student")}
                     </span>
                     <span className="font-content text-[var(--color-white)]">
-                        Full Name
+                        {t("username")}
                     </span>
                 </div>
 

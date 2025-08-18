@@ -1,3 +1,8 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
 type FormInputProps = {
     id?: string;
     className?: string;
@@ -29,9 +34,12 @@ const FormInput = ({
     onIconClick,
     forgotPasswordLink,
 }: FormInputProps) => {
+    const t = useTranslations();
+    const [isFocused, setIsFocused] = useState(false);
+
     const borderClass = error
         ? "border-[var(--color-error)]"
-        : success
+        : success && isFocused
             ? "border-[var(--color-green-border)]"
             : "border-[var(--color-stroke)] focus-within:border-[var(--color-violet)]";
 
@@ -51,7 +59,7 @@ const FormInput = ({
                         href={forgotPasswordLink}
                         className="font-small-text text-[var(--color-violet)]/80"
                     >
-                        Forgot password?
+                        {t("forgotPassword")}
                     </a>
                 )}
             </div>
@@ -61,6 +69,8 @@ const FormInput = ({
                 <input
                     id={id}
                     className={`flex-grow bg-transparent rounded-[12px] outline-none font-small-text text-[var(--color-white)] placeholder:text-[var(--color-grey)] pl-[15px] h-[45px]`}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     type={type}
                     placeholder={placeholder}
                     value={value}

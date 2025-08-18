@@ -1,6 +1,8 @@
+"use client";
+
 import { AuthTabs } from "@/utils/AuthTabs";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import SignupTab from "./SignupTab";
 
 type AuthTabsComponentProps = {
     activeTab: AuthTabs;
@@ -11,6 +13,8 @@ const AuthTabsComponent = ({
     activeTab,
     setActiveTab,
 }: AuthTabsComponentProps) => {
+    const t = useTranslations();
+
     const signupRef = useRef<HTMLButtonElement>(null);
     const loginRef = useRef<HTMLButtonElement>(null);
     const [lineLeft, setLineLeft] = useState("0px");
@@ -34,14 +38,14 @@ const AuthTabsComponent = ({
                     className={`relative pb-[10px] mr-[30px] font-small-text hover:cursor-pointer ${activeTab === AuthTabs.SIGNUP ? "text-[var(--color-violet)]" : "text-[var(--color-grey)]"}`}
                     onClick={() => setActiveTab(AuthTabs.SIGNUP)}
                 >
-                    Sign up
+                    {t("signup")}
                 </button>
                 <button
                     ref={loginRef}
                     className={`relative pb-[10px] font-small-text hover:cursor-pointer ${activeTab === AuthTabs.LOGIN ? "text-[var(--color-violet)]" : "text-[var(--color-grey)]"}`}
                     onClick={() => setActiveTab(AuthTabs.LOGIN)}
                 >
-                    Log in
+                    {t("login")}
                 </button>
 
                 <span

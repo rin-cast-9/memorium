@@ -1,15 +1,18 @@
+"use client";
+
 import { useState } from "react";
 import FormInput from "./FormInput";
+import { useTranslations } from "next-intl";
 
 type PasswordInputProps = {
     value: string;
     setValue: (v: string) => void;
-    validate?: (v: string) => string | null;
+    validate?: (v: string, t: (key: string) => string) => string | null;
     placeholder: string;
     label: string;
     showValidation?: boolean;
+    showSuccess?: boolean;
     error?: string;
-    success?: boolean;
     forgotPasswordLink?: string;
     className?: string;
 };
@@ -17,15 +20,25 @@ type PasswordInputProps = {
 const PasswordInput = ({
     value,
     setValue,
-    validate,
+    validate = (v: string, t: (key: string) => string) => {
+        if (v.length === 0) {
+            return (t("errors.PASSWORD_EMPTY"));
+        }
+        if (v.length < 8) {
+            return t("errors.PASSWORD_TOO_SHORT");
+        }
+        return null;
+    },
     placeholder,
     label,
-    showValidation = false,
+    showValidation = true,
+    showSuccess,
     error,
-    success,
     forgotPasswordLink,
     className = "",
 }: PasswordInputProps) => {
+    const t = useTranslations();
+
     const [internalError, setInternalError] = useState <string | null> (null);
     const [visible, setVisible] = useState(false);
 
@@ -34,7 +47,7 @@ const PasswordInput = ({
         setValue(v);
 
         if (showValidation && validate) {
-            setInternalError(validate(v));
+            setInternalError(validate(v, t));
         }
     };
 
@@ -44,6 +57,8 @@ const PasswordInput = ({
             alt={visible ? "Hide" : "Show"}
         />
     );
+
+    const success = showSuccess && !error && !internalError;
 
     return (
         <FormInput

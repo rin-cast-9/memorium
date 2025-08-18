@@ -1,9 +1,14 @@
+"use client";
+
 import { AuthTabs } from "@/utils/AuthTabs";
+import { useTranslations } from "next-intl";
 
 const YandexAuthButton = ({ activeTab }: { activeTab: AuthTabs }) => {
+    const t = useTranslations();
+
     const text = activeTab === AuthTabs.SIGNUP
-        ? "Sign up via Yandex"
-        : "Log in via Yandex";
+        ? t("yandexSignup")
+        : t("yandexLogin");
 
     return (
         <button

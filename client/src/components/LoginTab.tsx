@@ -51,6 +51,7 @@ const LoginTab = ({
                         label="Password"
                         forgotPasswordLink="#"
                         error={loginError ?? undefined}
+                        showSuccess
                     />
                 </div>
                 <div className="flex justify-center mt-[30px]">

@@ -1,3 +1,5 @@
+"use client";
+
 import { AuthTabs } from "@/utils/AuthTabs";
 import Divider from "./Divider";
 import ValidatedInput from "./ValidatedInput";
@@ -8,6 +10,7 @@ import YandexAuthButton from "./YandexAuthButton";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { validateEmail, validateFullName } from "@/utils/validators";
+import { useTranslations } from "next-intl";
 
 type SignupTabProps = {
     email: string;
@@ -32,6 +35,8 @@ const SignupTab = ({
     fullNameError,
     emailError,
 }: SignupTabProps) => {
+    const t = useTranslations();
+
     const [accepted, setAccepted] = useState(false);
 
     return (
@@ -48,9 +53,10 @@ const SignupTab = ({
                     setValue={setFullName}
                     validate={validateFullName}
                     type="text"
-                    placeholder="Full name"
-                    label="Full name"
+                    placeholder={t("enterName")}
+                    label={t("username")}
                     serverError={fullNameError}
+                    showSuccess
                 />
                 <div className="flex w-full gap-[20px] mt-[20px]">
                     <ValidatedInput
@@ -58,17 +64,18 @@ const SignupTab = ({
                         setValue={setEmail}
                         validate={validateEmail}
                         type="email"
-                        placeholder="Email"
-                        label="Email"
+                        placeholder={t("enterEmail")}
+                        label={t("email")}
                         serverError={emailError}
                         showSuccess
                     />
                     <PasswordInput
                         value={password}
                         setValue={setPassword}
-                        placeholder="Password"
-                        label="Password"
+                        placeholder={t("enterPassword")}
+                        label={t("password")}
                         forgotPasswordLink="#"
+                        showSuccess
                     />
                 </div>
                 <Checkbox
@@ -77,12 +84,12 @@ const SignupTab = ({
                     className="mt-[30px]"
                 >
                     <span className="font-text-small text-[var(--color-white)]/40">
-                        I accept the <span className="text-[var(--color-white)]/70">terms</span> and <span className="text-[var(--color-white)]/70">conditions</span>
+                        {t("accept")}<span className="text-[var(--color-white)]/70"> {t("terms")}</span> {t("and")} <span className="text-[var(--color-white)]/70">{t("policy")}</span>
                     </span>
                 </Checkbox>
                 <div className="flex justify-center mt-[30px]">
                     <Button
-                        label={"Sign up"}
+                        label={t("signup")}
                         size={ButtonSize.NORMAL}
                         type={accepted ? ButtonType.PRIMARY : ButtonType.DISABLED}
                         htmlType="submit"
