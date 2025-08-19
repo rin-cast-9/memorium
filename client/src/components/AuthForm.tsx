@@ -70,7 +70,7 @@ const AuthForm = () => {
             body: JSON.stringify({ email, password }),
         });
 
-        type TokenResponse = { token: string; };
+        type TokenResponse = { token: string; username: string; };
 
         const { data, error } = await parseApiResponse<TokenResponse>(response);
 
@@ -81,6 +81,7 @@ const AuthForm = () => {
 
         if (data) {
             localStorage.setItem("token", data.token);
+            localStorage.setItem("username", data.username);
             window.location.href = "/ping";
             return true;
         }

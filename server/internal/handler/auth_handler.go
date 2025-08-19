@@ -50,12 +50,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.Login(req.Email, req.Password)
+	token, username, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
 	util.Logger.Info("Login successful", zap.String("email", req.Email))
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token, "username": username})
 }

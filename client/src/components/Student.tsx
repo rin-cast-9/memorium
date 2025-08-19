@@ -29,6 +29,7 @@ const Student = () => {
 
     const logout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("username");
         window.location.href = "/auth";
     };
 
@@ -40,7 +41,7 @@ const Student = () => {
                         {t("student")}
                     </span>
                     <span className="font-content text-[var(--color-white)]">
-                        {t("username")}
+                        {localStorage.getItem("username") ?? t("username")}
                     </span>
                 </div>
 

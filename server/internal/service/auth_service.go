@@ -50,26 +50,26 @@ func (s *AuthService) Register(email, fullName, password string) error {
 	return nil
 }
 
-func (s *AuthService) Login(email, password string) (string, error) {
+func (s *AuthService) Login(email, password string) (token, username string, err error) {
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
 		util.Logger.Warn("Login failed: user not found", zap.String("email", email))
-		return "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
+		return "", "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
 	}
 
 	if util.CheckPassword(user.PasswordHash, password) != nil {
 		util.Logger.Warn("Login failed: wrong password", zap.String("email", email))
-		return "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
+		return "", "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
 	}
 
-	token, err := util.GenerateToken(uint(user.ID), time.Hour)
+	token, err = util.GenerateToken(uint(user.ID), time.Hour)
 	if err != nil {
 		util.Logger.Error("Token generation failed", zap.String("email", email), zap.Error(err))
-		return "", util.NewInternalError(util.ErrCodeTokenGenerationFailed, err)
+		return "", "", util.NewInternalError(util.ErrCodeTokenGenerationFailed, err)
 	}
 
 	util.Logger.Info("User logged in", zap.String("email", email), zap.Uint("userID", uint(user.ID)))
-	return token, nil
+	return token, user.FullName, nil
 }
 
 func validateFullName(name string) error {
