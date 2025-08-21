@@ -28,9 +28,22 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
+	folderRepo := repo.NewFolderRepo(db)
+	folderService := service.NewFolderService(folderRepo)
+	folderHandler := handler.NewFolderHandler(folderService)
+
 	router.GET("/ping", middleware.JWTAuthMiddleware(), handler.PingHandler(db))
 	router.POST("/register", authHandler.Register)
 	router.POST("/login", authHandler.Login)
+
+	folderRoutes := router.Group("/folders", middleware.JWTAuthMiddleware())
+	{
+		folderRoutes.GET("", folderHandler.ListFolders)
+		folderRoutes.GET("/:id", folderHandler.GetFolder)
+		folderRoutes.POST("", folderHandler.CreateFolder)
+		folderRoutes.PUT("/:id", folderHandler.RenameFolder)
+		folderRoutes.DELETE("/:id", folderHandler.DeleteFolder)
+	}
 
 	util.Logger.Info("Routes registered", zap.Int("count", 3))
 
