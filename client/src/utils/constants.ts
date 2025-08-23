@@ -20,12 +20,27 @@ export type ApiError = {
 };
 
 export const parseApiResponse = async <T> (response: Response): Promise<{ data?: T; error?: ApiError }> => {
-    let data: unknown;
+    if (response.status === 204 || response.status === 201) {
+        return {};
+    }
 
+    let text: string;
     try {
-        data = await response.json();
+        text = await response.text();
     }
     catch { 
+        return { error: { error: ERROR_CODES.INVALID_JSON } };
+    }
+
+    if (!text) {
+        return { error: { error: ERROR_CODES.INTERNAL_SERVER_ERROR } };
+    }
+
+    let data: unknown;
+    try {
+        data = JSON.parse(text);
+    }
+    catch {
         return { error: { error: ERROR_CODES.INVALID_JSON } };
     }
 
