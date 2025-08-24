@@ -34,7 +34,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		util.Logger.Debug("Token valid", zap.Uint("userID", claims.UserID))
-		c.Set("userID", claims.UserID)
+		c.Set("userID", int(claims.UserID))
 
 		c.Next()
 	}
