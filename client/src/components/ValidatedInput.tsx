@@ -10,7 +10,7 @@ type ValidatedInputProps = {
     validate: (v: string, t: (key: string) => string) => string | null;
     type: string;
     placeholder: string;
-    label: string;
+    label?: string;
     showSuccess?: boolean;
     className?: string;
     serverError?: string | null;

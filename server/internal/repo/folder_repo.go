@@ -36,14 +36,19 @@ func (r *folderRepo) CreateFolder(userID int, folder *model.Folder) error {
 }
 
 func (r *folderRepo) DeleteFolder(userID, folderID int) error {
-	err := r.db.Where("id = ? AND user_id = ?", folderID, userID).Delete(&model.Folder{}).Error
-	if err != nil {
-		util.Logger.Error("Failed to delete folder", zap.Int("folderID", folderID), zap.Int("userID", userID), zap.Error(err))
-	} else {
-		util.Logger.Info("Folder deleted", zap.Int("folderID", folderID), zap.Int("userID", userID))
+	res := r.db.Where("id = ? AND user_id = ?", folderID, userID).Delete(&model.Folder{})
+	if res.Error != nil {
+		util.Logger.Error("Failed to delete folder", zap.Int("folderID", folderID), zap.Int("userID", userID), zap.Error(res.Error))
+		return res.Error
 	}
 
-	return err
+	if res.RowsAffected == 0 {
+		util.Logger.Warn("No folder found to delete", zap.Int("folderID", folderID), zap.Int("userID", userID))
+		return gorm.ErrRecordNotFound
+	}
+
+	util.Logger.Info("Folder deleted", zap.Int("folderID", folderID), zap.Int("userID", userID))
+	return nil
 }
 
 func (r *folderRepo) RenameFolder(userID, folderID int, newName string) error {

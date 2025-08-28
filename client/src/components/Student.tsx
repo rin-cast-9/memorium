@@ -8,10 +8,17 @@ import { useTranslations } from "next-intl";
 const Student = () => {
     const t = useTranslations();
 
+    const [username, setUsername] = useState("");
+
     const [showLogout, setShowLogout] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        const stored = localStorage.getItem("username");
+        if (stored) {
+            setUsername(stored)
+        }
+
         const handleClickOutside = (e: MouseEvent) => {
             if (!containerRef.current?.contains(e.target as Node)) {
                 setShowLogout(false);
@@ -41,7 +48,7 @@ const Student = () => {
                         {t("student")}
                     </span>
                     <span className="font-content text-[var(--color-white)]">
-                        {localStorage.getItem("username") ?? t("username")}
+                        {username || t("username")}
                     </span>
                 </div>
 

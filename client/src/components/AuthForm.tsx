@@ -6,7 +6,7 @@ import AuthTabsComponent from "./AuthTabsComponent";
 import SignupTab from "./SignupTab";
 import LoginTab from "./LoginTab";
 import { useTranslations } from "next-intl";
-import { apiUrl, ERROR_CODES, parseApiResponse } from "@/utils/constants";
+import { apiUrl, ERROR_CODES, parseApiResponse } from "@/utils/api";
 
 const AuthForm = () => {
     const t = useTranslations();
@@ -14,7 +14,7 @@ const AuthForm = () => {
     const [activeTab, setActiveTab] = useState(AuthTabs.SIGNUP);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [fullName, setFullName] = useState("");
+    const [fullname, setFullname] = useState("");
     const [fullNameError, setFullNameError] = useState<string | null>(null);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [loginError, setLoginError] = useState<string | null>(null);
@@ -29,10 +29,10 @@ const AuthForm = () => {
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, fullName, password }),
+            body: JSON.stringify({ email, fullname, password }),
         });
 
-        const { data, error } = await parseApiResponse<RegisterResponse>(response);
+        const { error } = await parseApiResponse<RegisterResponse>(response);
 
         if (error) {
             switch (error.error) {
@@ -92,7 +92,7 @@ const AuthForm = () => {
 
     return (
         <div className="bg-[var(--color-black-4)] flex flex-col min-h-screen">
-            <main className="flex flex-1 justify-center">
+            <div className="flex flex-1 justify-center">
                 <div className="bg-[var(--color-black-4)] w-[580px] pt-[73px]">
                     <div className="text-[var(--color-white)] font-h1 text-center">
                         {t("greeting")}
@@ -107,10 +107,10 @@ const AuthForm = () => {
                         <SignupTab
                             email={email}
                             password={password}
-                            fullName={fullName}
+                            fullName={fullname}
                             setEmail={setEmail}
                             setPassword={setPassword}
-                            setFullName={setFullName}
+                            setFullName={setFullname}
                             onSubmit={handleSingupSubmit}
                             fullNameError={fullNameError}
                             emailError={emailError}
@@ -129,7 +129,7 @@ const AuthForm = () => {
                     )}
 
                 </div>
-            </main>
+            </div>
         </div>
     );
 };

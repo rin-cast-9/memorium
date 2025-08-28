@@ -11,6 +11,7 @@ export const ERROR_CODES = {
     INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
     INVALID_REQUEST: "INVALID_REQUEST",
     INVALID_JSON: "INVALID_JSON",
+    FOLDER_DISPLAY_NAME_EMPTY: "FOLDER_DISPLAY_NAME_EMPTY",
 } as const;
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
@@ -20,7 +21,7 @@ export type ApiError = {
 };
 
 export const parseApiResponse = async <T> (response: Response): Promise<{ data?: T; error?: ApiError }> => {
-    if (response.status === 204 || response.status === 201) {
+    if (response.status === 204) {
         return {};
     }
 
@@ -33,7 +34,7 @@ export const parseApiResponse = async <T> (response: Response): Promise<{ data?:
     }
 
     if (!text) {
-        return { error: { error: ERROR_CODES.INTERNAL_SERVER_ERROR } };
+        return {};
     }
 
     let data: unknown;

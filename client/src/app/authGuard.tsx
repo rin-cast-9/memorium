@@ -19,7 +19,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (auth && pathname === "/auth") {
-            router.push("/ping");
+            router.push("/library");
         }
     }, [pathname, router]);
 

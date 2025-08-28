@@ -1,7 +1,7 @@
 "use client";
 
 import AuthForm from "@/components/AuthForm";
-import { apiUrl } from "@/utils/constants";
+import { apiUrl } from "@/utils/api";
 import { useState } from "react";
 
 const RegisterPage = () => {

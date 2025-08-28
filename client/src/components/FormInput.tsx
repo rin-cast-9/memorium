@@ -45,24 +45,26 @@ const FormInput = ({
 
     return (
         <div className={`flex flex-col gap-1 w-full ${className}`}>
-            <div className="flex justify-between w-full mb-[10px]">
-                {label && (
-                    <label
-                        htmlFor={id}
-                        className="font-small-text text-[var(--color-grey)] inline-block"
-                    >
-                        {label}
-                    </label>
-                )}
-                {forgotPasswordLink && (
-                    <a
-                        href={forgotPasswordLink}
-                        className="font-small-text text-[var(--color-violet)]/80"
-                    >
-                        {t("forgotPassword")}
-                    </a>
-                )}
-            </div>
+            {(label || forgotPasswordLink) && (
+                <div className="flex justify-between w-full mb-[10px]">
+                    {label && (
+                        <label
+                            htmlFor={id}
+                            className="font-small-text text-[var(--color-grey)] inline-block"
+                        >
+                            {label}
+                        </label>
+                    )}
+                    {forgotPasswordLink && (
+                        <a
+                            href={forgotPasswordLink}
+                            className="font-small-text text-[var(--color-violet)]/80"
+                        >
+                            {t("forgotPassword")}
+                        </a>
+                    )}
+                </div>
+            )}
             <div
                 className={`relative flex w-full mb-[10px] items-center rounded-[12px] bg-[var(--color-black-1)] border ${borderClass}`}
             >
