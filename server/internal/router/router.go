@@ -8,7 +8,6 @@ import (
 	"github.com/rin-cast-9/memorium/server/internal/repo"
 	"github.com/rin-cast-9/memorium/server/internal/service"
 	"github.com/rin-cast-9/memorium/server/internal/util"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -29,8 +28,11 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	authHandler := handler.NewAuthHandler(authService)
 
 	folderRepo := repo.NewFolderRepo(db)
-	folderService := service.NewFolderService(folderRepo)
+	moduleRepo := repo.NewModuleRepo(db)
+	folderService := service.NewFolderService(folderRepo, moduleRepo)
+	moduleService := service.NewModuleService(moduleRepo, folderRepo)
 	folderHandler := handler.NewFolderHandler(folderService)
+	moduleHandler := handler.NewModuleHandler(moduleService)
 
 	router.GET("/ping", middleware.JWTAuthMiddleware(), handler.PingHandler(db))
 	router.POST("/register", authHandler.Register)
@@ -40,12 +42,25 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	{
 		folderRoutes.GET("", folderHandler.ListFolders)
 		folderRoutes.GET("/:id", folderHandler.GetFolder)
+		folderRoutes.GET("/:id/modules", folderHandler.ListModulesByFolder)
 		folderRoutes.POST("", folderHandler.CreateFolder)
+		folderRoutes.POST("/:id/modules", folderHandler.UpdateFolderModules)
 		folderRoutes.PUT("/:id", folderHandler.RenameFolder)
 		folderRoutes.DELETE("/:id", folderHandler.DeleteFolder)
 	}
 
-	util.Logger.Info("Routes registered", zap.Int("count", 3))
+	moduleRoutes := router.Group("/modules", middleware.JWTAuthMiddleware())
+	{
+		moduleRoutes.GET("", moduleHandler.ListModules)
+		moduleRoutes.GET("/:id", moduleHandler.GetModule)
+		moduleRoutes.GET("/:id/folders", moduleHandler.ListFoldersByModule)
+		moduleRoutes.POST("", moduleHandler.CreateModule)
+		moduleRoutes.POST("/:id/folders", moduleHandler.UpdateModuleFolders)
+		moduleRoutes.PUT("/:id", moduleHandler.RenameModule)
+		moduleRoutes.DELETE("/:id", moduleHandler.DeleteModule)
+	}
+
+	util.Logger.Info("Routes registered")
 
 	return router
 }

@@ -13,6 +13,10 @@ type FolderRepo interface {
 	RenameFolder(userID, folderID int, newName string) error
 	GetAllFolders(userID int) ([]model.Folder, error)
 	GetFolderByID(userID, folderID int) (*model.Folder, error)
+	GetModulesByFolder(userID, folderID int) ([]model.Module, error)
+	AddFolderToModule(folderID, moduleID int) error
+	RemoveFolderFromModule(folderID, moduleID int) error
+	UpdateFolderModulesDelta(folderID int, checkedModuleIDs, uncheckedModuleIDs []int) error
 }
 
 type folderRepo struct {
@@ -86,4 +90,66 @@ func (r *folderRepo) GetFolderByID(userID, folderID int) (*model.Folder, error) 
 	}
 
 	return &folder, err
+}
+
+func (r *folderRepo) GetModulesByFolder(userID, folderID int) ([]model.Module, error) {
+	var modules []model.Module
+	err := r.db.Joins("JOIN folder_modules fm ON fm.module_id = modules.id").
+		Joins("JOIN folders f ON f.id = fm.folder_id").
+		Where("f.id = ? AND f.user_id = ?", folderID, userID).
+		Find(&modules).Error
+
+	if err != nil {
+		util.Logger.Error("Failed to retrieve modules for folder", zap.Int("folderID", folderID), zap.Int("userID", userID), zap.Error(err))
+	} else {
+		util.Logger.Info("Modules for folder retrieved", zap.Int("folderID", folderID), zap.Int("userID", userID))
+	}
+
+	return modules, err
+}
+
+func (r *folderRepo) AddFolderToModule(folderID, moduleID int) error {
+	err := r.db.Exec("INSERT INTO folder_modules (folder_id, module_id) VALUES (?, ?) ON CONFLICT DO NOTHING", folderID, moduleID).Error
+	if err != nil {
+		util.Logger.Error("Failed to add folder to module", zap.Int("folderID", folderID), zap.Int("moduleID", moduleID), zap.Error(err))
+	}
+
+	return err
+}
+
+func (r *folderRepo) RemoveFolderFromModule(folderID, moduleID int) error {
+	err := r.db.Exec("DELETE FROM folder_modules WHERE folder_id = ? AND module_id = ?", folderID, moduleID).Error
+	if err != nil {
+		util.Logger.Error("Failed to remove folder from module", zap.Int("folderID", folderID), zap.Int("moduleID", moduleID), zap.Error(err))
+	}
+
+	return err
+}
+
+func (r *folderRepo) addFolderToModuleTx(tx *gorm.DB, folderID, moduleID int) error {
+	return tx.Exec("INSERT INTO folder_modules (folder_id, module_id) VALUES (?, ?) ON CONFLICT DO NOTHING", folderID, moduleID).Error
+}
+
+func (r *folderRepo) removeFolderFromModuleTx(tx *gorm.DB, folderID, moduleID int) error {
+	return tx.Exec("DELETE FROM folder_modules WHERE folder_id = ? AND module_id = ?", folderID, moduleID).Error
+}
+
+func (r *folderRepo) UpdateFolderModulesDelta(folderID int, checkedModuleIDs, uncheckedModuleIDs []int) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, uncheckedModuleID := range uncheckedModuleIDs {
+			if err := r.removeFolderFromModuleTx(tx, folderID, uncheckedModuleID); err != nil {
+				util.Logger.Error("Failed to delete existing module association", zap.Int("folderID", folderID), zap.Int("uncheckedModuleID", uncheckedModuleID), zap.Error(err))
+				return err
+			}
+		}
+
+		for _, checkedModuleID := range checkedModuleIDs {
+			if err := r.addFolderToModuleTx(tx, folderID, checkedModuleID); err != nil {
+				util.Logger.Error("Failed to insert module association", zap.Int("folderID", folderID), zap.Int("checkedModuleID", checkedModuleID), zap.Error(err))
+				return err
+			}
+		}
+
+		return nil
+	})
 }

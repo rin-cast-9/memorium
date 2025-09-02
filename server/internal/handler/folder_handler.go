@@ -46,6 +46,7 @@ func (h *FolderHandler) DeleteFolder(c *gin.Context) {
 	folderID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid folder id"))
+		return
 	}
 
 	err = h.folderService.Delete(userID, folderID)
@@ -64,6 +65,7 @@ func (h *FolderHandler) RenameFolder(c *gin.Context) {
 	folderID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid folder id"))
+		return
 	}
 
 	var req struct {
@@ -105,14 +107,64 @@ func (h *FolderHandler) GetFolder(c *gin.Context) {
 }
 
 func (h *FolderHandler) ListFolders(c *gin.Context) {
-	userId := c.GetInt("userID")
+	userID := c.GetInt("userID")
 
-	folders, err := h.folderService.List(userId)
+	folders, err := h.folderService.List(userID)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
-	util.Logger.Info("Folders retrieved", zap.Int("userID", userId))
+	util.Logger.Info("Folders retrieved", zap.Int("userID", userID))
 	c.JSON(http.StatusOK, folders)
+}
+
+func (h *FolderHandler) ListModulesByFolder(c *gin.Context) {
+	userID := c.GetInt("userID")
+
+	folderID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid folder id"))
+		return
+	}
+
+	modules, err := h.folderService.GetModulesByFolder(userID, folderID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	ids := make([]int, len(modules))
+	for i, m := range modules {
+		ids[i] = m.ID
+	}
+
+	c.JSON(http.StatusOK, ids)
+}
+
+func (h *FolderHandler) UpdateFolderModules(c *gin.Context) {
+	userID := c.GetInt("userID")
+
+	folderID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid folder id"))
+		return
+	}
+
+	var req struct {
+		ModuleMap map[int]bool `json:"module_map" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid request"))
+		return
+	}
+
+	err = h.folderService.UpdateFolderModules(userID, folderID, req.ModuleMap)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
