@@ -19,10 +19,10 @@ const Button = ({
     icon,
     className = "",
 }: ButtonProps) => {
-    const baseStyles = "flex items-center justify-center whitespace-nowrap font-bold-content text-[var(--color-white)] hover:cursor-pointer";
+    const baseStyles = "flex items-center justify-center whitespace-nowrap text-[var(--color-white)] hover:cursor-pointer";
 
     const sizeStyles: Record<ButtonSize, string> = {
-        [ButtonSize.NORMAL]: "min-w-[180px] h-[45px] rounded-[15px] px-[20px] text-content-bold",
+        [ButtonSize.NORMAL]: "min-w-[180px] h-[45px] rounded-[15px] px-[20px] font-bold-content",
         [ButtonSize.MEDIUM]: "min-w-[140px] h-[42px] rounded-[12px] px-[15px] font-small-text",
         [ButtonSize.SMALL]: "min-w-[100px] h-[30px] rounded-[10px] px-[10px] font-small-text",
     };

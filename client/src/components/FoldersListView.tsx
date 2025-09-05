@@ -7,12 +7,14 @@ type FoldersListViewProps = {
     items: Folder[];
     onDeleted: (id: number) => void;
     onRenamed: (id: number, newDisplayName: string) => void;
+    onSelected: (id: number) => void;
 }
 
 const FoldersListView = ({
     items,
     onDeleted,
     onRenamed,
+    onSelected,
 }: FoldersListViewProps) => {
     return (
         <div className="flex flex-col gap-[20px]">
@@ -23,6 +25,7 @@ const FoldersListView = ({
                     displayName={folder.display_name}
                     onDeleted={onDeleted}
                     onRenamed={onRenamed}
+                    onSelected={onSelected}
                 />
             ))}
         </div>

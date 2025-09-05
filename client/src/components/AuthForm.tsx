@@ -82,7 +82,7 @@ const AuthForm = () => {
         if (data) {
             localStorage.setItem("token", data.token);
             localStorage.setItem("username", data.username);
-            window.location.href = "/ping";
+            window.location.href = "/library";
             return true;
         }
 

@@ -6,6 +6,7 @@ import YandexAuthButton from "./YandexAuthButton";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { validateEmail } from "@/utils/validators";
+import { useTranslations } from "next-intl";
 
 type LoginTabProps = {
     email: string;
@@ -24,6 +25,8 @@ const LoginTab = ({
     onSubmit,
     loginError,
 }: LoginTabProps) => {
+    const t = useTranslations();
+
     return (
         <div className="mt-[30px]">
             <YandexAuthButton
@@ -39,16 +42,16 @@ const LoginTab = ({
                         setValue={setEmail}
                         validate={validateEmail}
                         type="email"
-                        placeholder="Email"
-                        label="Email"
+                        placeholder={t("enterEmail")}
+                        label={t("email")}
                         serverError={loginError}
                         showSuccess
                     />
                     <PasswordInput
                         value={password}
                         setValue={setPassword}
-                        placeholder="Password"
-                        label="Password"
+                        placeholder={t("enterPassword")}
+                        label={t("password")}
                         forgotPasswordLink="#"
                         error={loginError ?? undefined}
                         showSuccess
@@ -56,7 +59,7 @@ const LoginTab = ({
                 </div>
                 <div className="flex justify-center mt-[30px]">
                     <Button
-                        label={"Log in"}
+                        label={t("login")}
                         size={ButtonSize.NORMAL}
                         type={ButtonType.PRIMARY}
                         htmlType="submit"

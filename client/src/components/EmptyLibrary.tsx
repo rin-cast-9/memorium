@@ -6,11 +6,13 @@ import { ButtonSize, ButtonType } from "@/utils/Button.types";
 
 type EmptyLibraryProps = {
     text: string,
+    buttonLabel: string;
     onClick: () => void,
 };
 
 const EmptyLibrary = ({
     text,
+    buttonLabel,
     onClick
 }: EmptyLibraryProps) => {
     const t = useTranslations();
@@ -19,7 +21,7 @@ const EmptyLibrary = ({
         <div className="flex flex-col gap-[20px] items-center justify-center h-[212px] rounded-[30px] bg-[var(--color-black-1)]">
             <p className="w-[410px] text-center font-content text-[var(--color-grey)]">{text}</p>
             <Button
-                label={t("create")}
+                label={buttonLabel}
                 size={ButtonSize.NORMAL}
                 type={ButtonType.PRIMARY}
                 htmlType="button"

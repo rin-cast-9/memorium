@@ -60,7 +60,7 @@ const DropdownMenu = ({
                 </div>
             )}
         </div>
-    )
+    );
 };
 
 export default DropdownMenu;

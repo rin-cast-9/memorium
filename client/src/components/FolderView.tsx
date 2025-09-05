@@ -16,6 +16,7 @@ type FolderViewProps = {
     displayName: string;
     onDeleted: (id: number) => void;
     onRenamed: (id: number, newDisplayName: string) => void;
+    onSelected: (id: number) => void;
 }
 
 const FolderView = ({
@@ -23,6 +24,7 @@ const FolderView = ({
     displayName,
     onDeleted,
     onRenamed,
+    onSelected,
 }: FolderViewProps) => {
     const t = useTranslations();
 
@@ -85,13 +87,20 @@ const FolderView = ({
     return (
         <>
             <div
-                className="flex items-center justify-between bg-[var(--color-black-2)] border border-[var(--color-stroke)] rounded-[20px] px-[30px] h-[90px]"
+                onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button")) {
+                        return;
+                    }
+                    onSelected(id);
+                }}
+                className="flex items-center justify-between bg-[var(--color-black-2)] border border-[var(--color-stroke)] rounded-[20px] px-[30px] h-[90px] hover:cursor-pointer"
             >
                 <p className="font-content text-[var(--color-white)]">{displayName}</p>
                 <DropdownMenu
                     trigger={
                         <button>
-                            <img src="icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px]"/>
+                            <img src="icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px] hover:cursor-pointer"/>
                         </button>
                     }
                     items={[
