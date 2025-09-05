@@ -16,6 +16,7 @@ import { validateFolderDisplayName } from "@/utils/validators";
 import { createModuleApi, listFoldersApi, listModulesApi, listModulesByFolderApi, updateFolderModulesApi } from "@/utils/ApiRequests";
 import { Module } from "@/utils/Module";
 import FolderContentView from "./FolderContentView";
+import ModulesListView from "./ModulesListView";
 
 const LibraryView = () => {
     const t = useTranslations();
@@ -185,7 +186,9 @@ const LibraryView = () => {
                         onClick={() => {}}
                     />
                 ) : (
-                    null
+                    <ModulesListView
+                        items={modules}
+                    />
                 );
         }
     };
