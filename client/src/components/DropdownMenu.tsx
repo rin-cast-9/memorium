@@ -33,18 +33,29 @@ const DropdownMenu = ({
 
     return (
         <div ref={ref} className="relative inline-block">
-            <div onClick={() => setOpen(!open)}>{trigger}</div>
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setOpen(!open);
+                }}
+            >
+                {trigger}
+            </div>
 
             {open && (
-                <div className="absolute flex flex-col justify-center gap-[10px] py-[12px] right-0 mt-[15px] min-w-[184px] rounded-[12px] bg-[var(--color-black-1)] border border-[var(--color-stroke)] z-40">
+                <div
+                    className="absolute flex flex-col justify-center gap-[10px] py-[12px] right-0 mt-[15px] min-w-[184px] rounded-[12px] bg-[var(--color-black-1)] border border-[var(--color-stroke)] z-40"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     {items.map((item, idx) => (
                         <div key={idx}>
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     item.onClick();
                                     setOpen(false);
                                 }}
-                                className="w-full flex items-center ml-[15px] text-left text-[var(--color-white)] hover:cursor-pointer"
+                                className="w-full flex items-center px-[15px] text-left text-[var(--color-white)] hover:cursor-pointer"
                             >
                                 {item.icon && (
                                     <img src={item.icon} alt="" className="w-[16px] h-[16px] mr-[10px]"/>

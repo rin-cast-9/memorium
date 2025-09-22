@@ -2,99 +2,40 @@
 
 import { useTranslations } from "next-intl";
 import DropdownMenu from "./DropdownMenu";
-import { apiUrl, parseApiResponse } from "@/utils/api";
-import { Folder } from "@/utils/Folder";
+import { ErrorCode } from "@/utils/api";
 import Modal from "./Modal";
 import { useState } from "react";
 import ValidatedInput from "./ValidatedInput";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { validateFolderDisplayName } from "@/utils/validators";
+import { useRouter } from "next/navigation";
 
 type FolderViewProps = {
     id: number;
     displayName: string;
-    onDeleted: (id: number) => void;
-    onRenamed: (id: number, newDisplayName: string) => void;
-    onSelected: (id: number) => void;
-}
+    onDelete: (id: number) => void;
+    onRename: (id: number, newDisplayName: string) => Promise<ErrorCode | undefined>;
+};
 
 const FolderView = ({
     id,
     displayName,
-    onDeleted,
-    onRenamed,
-    onSelected,
+    onDelete,
+    onRename
 }: FolderViewProps) => {
     const t = useTranslations();
+    const router = useRouter();
 
     const [isRenameFolderModalOpen, setIsRenameFolderModalOpen] = useState(false);
     const [newDisplayName, setNewDisplayName] = useState("");
     const [newDisplayNameError, setNewDisplayNameError] = useState("");
 
-    const deleteFolder = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${apiUrl}/folders/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: token ? `Bearer ${token}` : "",
-                }
-            });
-
-            type DeleteFolderResponse = {};
-            const { error } = await parseApiResponse<DeleteFolderResponse>(response);
-
-            if (error) {
-                console.log(t(`errors.${error.error}`));
-            } else {
-                onDeleted(id);
-            }
-        }
-        catch (e) {
-            alert(e);
-        }
-    };
-
-    const renameFolder = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${apiUrl}/folders/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: token ? `Bearer ${token}` : "",
-                },
-                body: JSON.stringify({ new_display_name: newDisplayName })
-            });
-
-            const { data, error } = await parseApiResponse<Folder>(response);
-
-            if (error) {
-                setNewDisplayNameError(t(`errors.${error.error}`));
-            } 
-            
-            if (data) {
-                onRenamed(data.id, data.display_name);
-            }
-        }
-        catch (e) {
-            alert(e);
-        }
-    };
-
     return (
         <>
             <div
-                onClick={(e) => {
-                    const target = e.target as HTMLElement;
-                    if (target.closest("button")) {
-                        return;
-                    }
-                    onSelected(id);
-                }}
                 className="flex items-center justify-between bg-[var(--color-black-2)] border border-[var(--color-stroke)] rounded-[20px] px-[30px] h-[90px] hover:cursor-pointer"
+                onClick={() => router.push(`/library/folder/${id}`)}
             >
                 <p className="font-content text-[var(--color-white)]">{displayName}</p>
                 <DropdownMenu
@@ -114,7 +55,7 @@ const FolderView = ({
                         },
                         {
                             label: t("delete"),
-                            onClick: () => deleteFolder(),
+                            onClick: () => onDelete(id),
                             icon: "icons/icon-module-1.svg"
                         }
                     ]}
@@ -127,7 +68,7 @@ const FolderView = ({
                 >
                     <form onSubmit={async e => {
                         e.preventDefault();
-                        await renameFolder();
+                        setNewDisplayNameError((await onRename(id, newDisplayName)) ?? "");
                         setIsRenameFolderModalOpen(false);
                     }}>
                         <ValidatedInput

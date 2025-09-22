@@ -18,7 +18,7 @@ const ModuleView = ({
                 <DropdownMenu
                     trigger={
                         <button>
-                            <img src="icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px]"/>
+                            <img src="/icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px]"/>
                         </button>
                     }
                     items={[

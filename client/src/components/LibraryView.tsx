@@ -5,7 +5,6 @@ import { Folder } from "@/utils/Folder";
 import { LibraryTabs } from "@/utils/LibraryTabs";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import EmptyLibrary from "./EmptyLibrary";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import Modal from "./Modal";
@@ -13,43 +12,26 @@ import ValidatedInput from "./ValidatedInput";
 import FoldersListView from "./FoldersListView";
 import LibraryTabsComponent from "./LibraryTabsComponent";
 import { validateFolderDisplayName } from "@/utils/validators";
-import { createModuleApi, listFoldersApi, listModulesApi, listModulesByFolderApi, updateFolderModulesApi } from "@/utils/ApiRequests";
+import { createFolderApi, deleteFolderApi, listFoldersApi, listModulesApi, renameFolderApi } from "@/utils/ApiRequests";
 import { Module } from "@/utils/Module";
-import FolderContentView from "./FolderContentView";
 import ModulesListView from "./ModulesListView";
 
 const LibraryView = () => {
     const t = useTranslations();
 
     const [activeTab, setActiveTab] = useState<LibraryTabs>(LibraryTabs.FOLDERS);
-    const handleSetActiveTab = (tab: LibraryTabs) => {
-        setActiveTab(tab);
-        setSelectedFolderId(null);
-    };
 
     const [folders, setFolders] = useState<Folder[]>([]);
-    const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
-    const [modulesByFolder, setModulesByFolder] = useState<Module[]>([]);
     const [modules, setModules] = useState<Module[]>([]);
     const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const [folderDisplayName, setFolderDisplayName] = useState("");
-
     const [folderDisplayNameError, setFolderDisplayNameError] = useState<string | null>(null);
+
     const createFolder = async (displayName: string) => {
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${apiUrl}/folders`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: token ? `Bearer ${token}` : "",
-                },
-                body: JSON.stringify({ display_name: displayName })
-            });
-
-            const { data, error } = await parseApiResponse<Folder>(response);
+            const { data, error } = await createFolderApi(displayName);
 
             if (error) {
                 setFolderDisplayNameError(t(`errors.${error.error}`));
@@ -62,20 +44,32 @@ const LibraryView = () => {
         }
     };
 
-    const handleModuleCreated = (module: Module) => {
-        setModules(prev => (prev.some(m => m.id === module.id) ? prev : [...prev, module]));
-    }
-
-    const handleUpdateFolderModules = async (selectionMap: Map<number, boolean>) => {
+    const deleteFolder = async (id: number) => {
         try {
-            if (selectedFolderId !== null) {
-                await updateFolderModulesApi(selectedFolderId, selectionMap);
-                const { data } = await listModulesByFolderApi(selectedFolderId);
-                const idSet = new Set<number>(data);
-                const modulesInFolder = modules.filter(m => idSet.has(m.id));
-                setModulesByFolder(modulesInFolder);
+            const { error } = await deleteFolderApi(id);
+
+            if (!error) {
+                setFolders(prev => prev.filter(f => f.id !== id))
             }
-        } catch (e) {
+        }
+        catch (e) {
+            alert(e);
+        }
+    };
+
+    const renameFolder = async (id: number, newDisplayName: string) => {
+        try {
+            const { data, error } = await renameFolderApi(id, newDisplayName);
+
+            if (error) {
+                return error.error;
+            }
+            
+            if (data) {
+                setFolders(prev => prev.map(f => f.id === data.id ? { ...f, display_name: data.display_name } : f));
+            }
+        }
+        catch (e) {
             alert(e);
         }
     };
@@ -116,78 +110,23 @@ const LibraryView = () => {
         fetchModules();
     }, [activeTab]);
 
-    useEffect(() => {
-        if (selectedFolderId === null) {
-            return;
-        }
-
-        const fetch = async () => {
-            setLoading(true);
-            try {
-                const { data } = await listModulesByFolderApi(selectedFolderId);
-                const idSet = new Set<number>(data);
-                const modulesInFolder = modules.filter(m => idSet.has(m.id));
-                setModulesByFolder(modulesInFolder);
-            }
-            finally {
-                setLoading(false);
-            }
-        };
-
-        fetch();
-    }, [selectedFolderId]);
-
-    const renderTab = (tab: LibraryTabs, folders: Folder[]) => {
+    const renderTab = (tab: LibraryTabs) => {
         switch (tab) {
             case LibraryTabs.FOLDERS:
-                if (folders.length === 0) {
-                    return (
-                        <EmptyLibrary
-                            text={t("emptyFolders")}
-                            buttonLabel={t("create")}
-                            onClick={() => {setIsNewFolderModalOpen(true)}}
-                        />
-                    );
-                }
-
-                if (selectedFolderId !== null) {
-                    const folder = folders.find(f => f.id === selectedFolderId);
-                    if (!folder) {
-                        setSelectedFolderId(null);
-                        return null;
-                    }
-
-                    return (
-                        <FolderContentView
-                            modules={modules}
-                            modulesByFolder={modulesByFolder}
-                            onSubmit={handleUpdateFolderModules}
-                            onModuleCreated={handleModuleCreated}
-                        />
-                    );
-                }
-
                 return (
                     <FoldersListView
                         items={folders}
-                        onDeleted={id => setFolders(prev => prev.filter(f => f.id !== id))}
-                        onRenamed={(id, newDisplayName) => {
-                            setFolders(prev => prev.map(f => f.id === id ? { ...f, display_name: newDisplayName } : f));
-                        }}
-                        onSelected={id => setSelectedFolderId(id)}
+                        onCreate={() => setIsNewFolderModalOpen(true)}
+                        onDelete={deleteFolder}
+                        onRename={renameFolder}
                     />
                 );
 
             case LibraryTabs.MODULES:
-                return modules.length === 0 ? (
-                    <EmptyLibrary
-                        text={t("emptyModules")}
-                        buttonLabel={t("create")}
-                        onClick={() => {}}
-                    />
-                ) : (
+                return (
                     <ModulesListView
                         items={modules}
+                        onCreate={() => {}}
                     />
                 );
         }
@@ -201,7 +140,7 @@ const LibraryView = () => {
                 <div className="flex justify-between items-center gep-[15px] mt-[30px]">
                     <LibraryTabsComponent
                         activeTab={activeTab}
-                        setActiveTab={handleSetActiveTab}
+                        setActiveTab={setActiveTab}
                     />
 
                     {folders.length !== 0 && activeTab === LibraryTabs.FOLDERS &&
@@ -229,7 +168,7 @@ const LibraryView = () => {
                     {loading ? (
                         <p className="text-[var(--color-grey)] font-content">{t("loading")}</p>
                     ) : (
-                        renderTab(activeTab, folders)
+                        renderTab(activeTab)
                     )}
                 </div>
             </div>
@@ -242,7 +181,6 @@ const LibraryView = () => {
                         e.preventDefault();
                         await createFolder(folderDisplayName);
                         setIsNewFolderModalOpen(false);
-                        setSelectedFolderId(null);
                         setFolderDisplayName("");
                     }}>
                         <ValidatedInput

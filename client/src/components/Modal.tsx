@@ -21,12 +21,13 @@ const Modal = ({
     }
 
     return (
-        <div className="fixed inset-0 bg-black/20 flex justify-center items-center overflow-auto">
-            <div className="bg-[var(--color-black-3)] w-[580px] rounded-[20px] p-[40px] relative">
+        <div className="fixed inset-0 bg-black/20 flex justify-center items-center">
+            <div className="flex flex-col bg-[var(--color-black-3)] w-[580px] rounded-[20px] p-[40px] relative max-h-[calc(100vh-80px)]">
                 <h1 className={`mb-[20px] font-h1 flex-1 ${titleAlign === ModalTitleAlignment.CENTER ? "text-center" : "text-left"}`}>
                     {title}
                 </h1>
-                <div className="overflow-y-auto">
+
+                <div className="flex-1 overflow-y-auto">
                     {children}
                 </div>
 

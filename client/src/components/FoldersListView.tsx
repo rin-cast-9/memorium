@@ -2,20 +2,35 @@
 
 import { Folder } from "@/utils/Folder";
 import FolderView from "./FolderView";
+import EmptyLibrary from "./EmptyLibrary";
+import { useTranslations } from "next-intl";
+import { ErrorCode } from "@/utils/api";
 
 type FoldersListViewProps = {
     items: Folder[];
-    onDeleted: (id: number) => void;
-    onRenamed: (id: number, newDisplayName: string) => void;
-    onSelected: (id: number) => void;
+    onCreate: () => void;
+    onDelete: (id: number) => void;
+    onRename: (id: number, newDisplayName: string) => Promise<ErrorCode | undefined>;
 }
 
 const FoldersListView = ({
     items,
-    onDeleted,
-    onRenamed,
-    onSelected,
+    onCreate,
+    onDelete,
+    onRename,
 }: FoldersListViewProps) => {
+    const t = useTranslations();
+
+    if (items.length === 0) {
+        return (
+            <EmptyLibrary
+                text={t("emptyFolders")}
+                buttonLabel={t("createFolder")}
+                onClick={onCreate}
+            />
+        )
+    }
+
     return (
         <div className="flex flex-col gap-[20px]">
             {items.map(folder => (
@@ -23,9 +38,8 @@ const FoldersListView = ({
                     key={folder.id}
                     id={folder.id}
                     displayName={folder.display_name}
-                    onDeleted={onDeleted}
-                    onRenamed={onRenamed}
-                    onSelected={onSelected}
+                    onDelete={onDelete}
+                    onRename={onRename}
                 />
             ))}
         </div>

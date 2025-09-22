@@ -16,13 +16,47 @@ const apiFetch = async (url: string, options: RequestInit = {}) => {
     return response;
 };
 
+export const createFolderApi = async (displayName: string) => {
+    const response = await apiFetch(`${apiUrl}/folders`, {
+        method: "POST",
+        body: JSON.stringify({ display_name: displayName }),
+    });
+
+    return parseApiResponse<Folder>(response);
+};
+
+export const deleteFolderApi = async (id: number) => {
+    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
+        method: "DELETE",
+    });
+
+    return parseApiResponse<{}>(response);
+};
+
+export const renameFolderApi = async (id: number, newDisplayName: string) => {
+    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ new_display_name: newDisplayName }),
+    });
+
+    return parseApiResponse<Folder>(response);
+};
+
 export const listFoldersApi = async () => {
     const response = await apiFetch(`${apiUrl}/folders`, {
         method: "GET",
     });
 
     return parseApiResponse<Folder[]>(response);
-}
+};
+
+export const getFolderApi = async (id: number) => {
+    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
+        method: "GET",
+    });
+
+    return parseApiResponse<Folder>(response);
+};
 
 export const createModuleApi = async (displayName: string) => {
     const response = await apiFetch(`${apiUrl}/modules`, {
@@ -82,7 +116,7 @@ export const updateFolderModulesApi = async (id: number, modulesByFolderMap: Map
     });
 
     const response = await apiFetch(`${apiUrl}/folders/${id}/modules`, {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify({ module_map: moduleMap }),
     });
 

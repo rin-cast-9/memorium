@@ -44,7 +44,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		folderRoutes.GET("/:id", folderHandler.GetFolder)
 		folderRoutes.GET("/:id/modules", folderHandler.ListModulesByFolder)
 		folderRoutes.POST("", folderHandler.CreateFolder)
-		folderRoutes.POST("/:id/modules", folderHandler.UpdateFolderModules)
+		folderRoutes.PUT("/:id/modules", folderHandler.UpdateFolderModules)
 		folderRoutes.PUT("/:id", folderHandler.RenameFolder)
 		folderRoutes.DELETE("/:id", folderHandler.DeleteFolder)
 	}
@@ -55,7 +55,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		moduleRoutes.GET("/:id", moduleHandler.GetModule)
 		moduleRoutes.GET("/:id/folders", moduleHandler.ListFoldersByModule)
 		moduleRoutes.POST("", moduleHandler.CreateModule)
-		moduleRoutes.POST("/:id/folders", moduleHandler.UpdateModuleFolders)
+		moduleRoutes.PUT("/:id/folders", moduleHandler.UpdateModuleFolders)
 		moduleRoutes.PUT("/:id", moduleHandler.RenameModule)
 		moduleRoutes.DELETE("/:id", moduleHandler.DeleteModule)
 	}
