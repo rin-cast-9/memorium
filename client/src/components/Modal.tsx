@@ -16,10 +16,6 @@ const Modal = ({
     onClose,
     children
 }: ModalProps) => {
-    const close = () => {
-
-    }
-
     return (
         <div className="fixed inset-0 bg-black/20 flex justify-center items-center">
             <div className="flex flex-col bg-[var(--color-black-3)] w-[580px] rounded-[20px] p-[40px] relative max-h-[calc(100vh-80px)]">

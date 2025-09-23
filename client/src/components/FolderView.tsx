@@ -28,6 +28,7 @@ const FolderView = ({
     const router = useRouter();
 
     const [isRenameFolderModalOpen, setIsRenameFolderModalOpen] = useState(false);
+    const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
     const [newDisplayName, setNewDisplayName] = useState("");
     const [newDisplayNameError, setNewDisplayNameError] = useState("");
 
@@ -55,7 +56,7 @@ const FolderView = ({
                         },
                         {
                             label: t("delete"),
-                            onClick: () => onDelete(id),
+                            onClick: () => setIsDeleteConfirmationModalOpen(true),
                             icon: "icons/icon-module-1.svg"
                         }
                     ]}
@@ -97,6 +98,33 @@ const FolderView = ({
                             />
                         </div>
                     </form>
+                </Modal>
+            )}
+            {isDeleteConfirmationModalOpen && (
+                <Modal
+                    title={t("deleteConfirmation")}
+                    onClose={() => setIsDeleteConfirmationModalOpen(false)}
+                >
+                    <p className="font-content text-[var(--color-grey)] text-center ml-[20px] mr-[40px] mb-[30px]">{t("deleteDetails")}</p>
+                    <div className="flex items-center justify-center gap-[20px]">
+                        <Button
+                            label={t("back")}
+                            size={ButtonSize.NORMAL}
+                            type={ButtonType.STROKE}
+                            htmlType="button"
+                            onClick={() => setIsDeleteConfirmationModalOpen(false)}
+                        />
+                        <Button
+                            label={t("delete")}
+                            size={ButtonSize.NORMAL}
+                            type={ButtonType.DANGER}
+                            htmlType="button"
+                            onClick={() => {
+                                onDelete(id);
+                                setIsDeleteConfirmationModalOpen(false);
+                            }}
+                        />
+                    </div>
                 </Modal>
             )}
         </>
