@@ -14,7 +14,7 @@ RUN go build -o server-app ./cmd/app
 
 # dev
 FROM deps AS dev 
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@1.62.0
 COPY . .
 EXPOSE 8080
 CMD ["air", "-c", ".air.toml"]

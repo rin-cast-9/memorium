@@ -7,16 +7,16 @@ COPY package.json yarn.lock ./
 FROM base AS deps 
 RUN yarn install --frozen-lockfile
 
-# prod build
-FROM deps AS builder 
-COPY . .
-RUN yarn build
-
 # dev
 FROM deps AS dev
 COPY . . 
 EXPOSE 3000
 CMD ["yarn", "dev"] 
+
+# prod build
+FROM deps AS builder 
+COPY . .
+RUN yarn build
 
 # prod
 FROM node:24-alpine AS runner 
