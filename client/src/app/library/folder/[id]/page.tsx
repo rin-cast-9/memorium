@@ -1,6 +1,4 @@
 import FolderContentView from "@/components/FolderContentView";
-import { getFolderApi } from "@/utils/ApiRequests";
-import { Folder } from "@/utils/Folder";
 
 type Props = {
     params: { id: number };

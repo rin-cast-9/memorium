@@ -1,6 +1,5 @@
 "use client";
 
-import { Module } from "@/utils/Module";
 import { useState } from "react";
 import Button from "./Button";
 import { useTranslations } from "next-intl";
@@ -8,22 +7,24 @@ import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import ChecklistCreate from "./ChecklistCreate";
 import ChecklistItem from "./ChecklistItem";
 
-type ModulesChecklistViewProps = {
-    modules: Module[];
+type ChecklistViewProps<T extends { id: number, display_name: string }> = {
+    items: T[];
     selected: Set<number>;
     setSelected: React.Dispatch<React.SetStateAction<Set<number>>>;
-    onSubmit: (selected: Set<number>, newModuleDisplayName: string) => void;
+    onSubmit: (selected: Set<number>, newDisplayName: string) => void;
+    placeholder: string;
 };
 
-const ModulesChecklistView = ({
-    modules,
+const ChecklistView = <T extends {id: number; display_name: string; }>({
+    items,
     selected,
     setSelected,
     onSubmit,
-}: ModulesChecklistViewProps) => {
+    placeholder,
+}: ChecklistViewProps<T>) => {
     const t = useTranslations();
 
-    const [newModuleDisplayName, setNewModuleDisplayName] = useState("");
+    const [newDisplayName, setNewDisplayName] = useState("");
 
     const toggleSelect = (id: number) => {
         setSelected(prev => {
@@ -36,15 +37,16 @@ const ModulesChecklistView = ({
     return (
         <div className="flex flex-col gap-[12px]">
             <ChecklistCreate
-                displayName={newModuleDisplayName}
-                setDisplayName={setNewModuleDisplayName}
+                displayName={newDisplayName}
+                setDisplayName={setNewDisplayName}
+                placeholder={placeholder}
             />
-            {modules.map(module => (
+            {items.map(item => (
                 <ChecklistItem
-                    key={module.id}
-                    checked={selected.has(module.id)}
-                    label={module.display_name}
-                    onChange={() => toggleSelect(module.id)}
+                    key={item.id}
+                    checked={selected.has(item.id)}
+                    label={item.display_name}
+                    onChange={() => toggleSelect(item.id)}
                 />
             ))}
 
@@ -53,11 +55,11 @@ const ModulesChecklistView = ({
                 size={ButtonSize.MEDIUM}
                 type={ButtonType.PRIMARY}
                 htmlType="button"
-                onClick={() => onSubmit(selected, newModuleDisplayName)}
+                onClick={() => onSubmit(selected, newDisplayName)}
                 className="mt-[18px]"
             />
         </div>
     );
 };
 
-export default ModulesChecklistView;
+export default ChecklistView;

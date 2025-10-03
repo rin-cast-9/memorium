@@ -17,6 +17,7 @@ type ModuleRepo interface {
 	AddModuleToFolder(moduleID, folderID int) error
 	RemoveModuleFromFolder(moduleID, folderID int) error
 	UpdateModuleFoldersDelta(moduleID int, checkedFolderIDs, uncheckedFolderIDs []int) error
+	IsModuleOwnedByUser(moduleID, userID int) (bool, error)
 }
 
 type moduleRepo struct {
@@ -97,7 +98,7 @@ func (r *moduleRepo) GetModuleByID(userID, moduleID int) (*model.Module, error) 
 func (r *moduleRepo) GetFoldersByModule(userID, moduleID int) ([]model.Folder, error) {
 	var folders []model.Folder
 	err := r.db.Joins("JOIN folder_modules fm ON fm.folder_id = folders.id").
-		Joins("JOIN modules m ON m.id = fm.modules_id").
+		Joins("JOIN modules m ON m.id = fm.module_id").
 		Where("m.id = ? AND m.user_id = ?", moduleID, userID).
 		Find(&folders).Error
 
@@ -155,4 +156,18 @@ func (r *moduleRepo) UpdateModuleFoldersDelta(moduleID int, checkedFolderIDs, un
 
 		return nil
 	})
+}
+
+func (r *moduleRepo) IsModuleOwnedByUser(moduleID, userID int) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.Module{}).
+		Where("id = ? AND user_id = ?", moduleID, userID).
+		Count(&count).Error
+
+	if err != nil {
+		util.Logger.Error("Failed to check module ownership", zap.Int("moduleID", moduleID), zap.Int("userID", userID), zap.Error(err))
+		return false, err
+	}
+
+	return count > 0, nil
 }

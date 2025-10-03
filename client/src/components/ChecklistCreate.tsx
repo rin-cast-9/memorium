@@ -5,11 +5,13 @@ import { useTranslations } from "use-intl";
 type ChecklistComponentProps = {
     displayName: string;
     setDisplayName: React.Dispatch<React.SetStateAction<string>>;
+    placeholder: string;
 };
 
 const ChecklistCreate = ({
     displayName,
-    setDisplayName
+    setDisplayName,
+    placeholder
 }: ChecklistComponentProps) => {
     const t = useTranslations();
 
@@ -22,7 +24,7 @@ const ChecklistCreate = ({
                 type="text"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                placeholder={t("createNewModuleInFolder")}
+                placeholder={placeholder}
                 className="flex-1 placeholder:font-small-text placeholder-[var(--color-grey)] outline-none"
             />
         </div>

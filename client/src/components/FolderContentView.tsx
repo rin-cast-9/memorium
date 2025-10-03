@@ -9,10 +9,9 @@ import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/utils/Folder";
 import { createModuleApi, getFolderApi, getModuleApi, listModulesApi, listModulesByFolderApi, updateFolderModulesApi } from "@/utils/ApiRequests";
-import { Foldit } from "next/font/google";
 import ModulesListView from "./ModulesListView";
 import { Module } from "@/utils/Module";
-import ModulesChecklistView from "./ModulesChecklistView";
+import ChecklistView from "./ChecklistView";
 
 type FolderContentViewProps = {
     folderId: number;
@@ -90,6 +89,9 @@ const FolderContentView = ({
             <ModulesListView
                 items={modules.filter(m => modulesByFolder.includes(m.id))}
                 onCreate={() => setIsAddToFolderModalOpen(true)}
+                onEdit={() => {}}
+                onSaveToFolderModal={() => {}}
+                onDelete={() => {}}
             />
         
             {isAddToFolderModalOpen && (
@@ -98,11 +100,12 @@ const FolderContentView = ({
                     titleAlign={ModalTitleAlignment.LEFT}
                     onClose={() => setIsAddToFolderModalOpen(false)}
                 >
-                    <ModulesChecklistView
-                        modules={modules}
+                    <ChecklistView
+                        items={modules}
                         selected={selected}
                         setSelected={setSelected}
                         onSubmit={handleSubmit}
+                        placeholder={t("createNewModuleInFolder")}
                     />
                 </Modal>
             )}

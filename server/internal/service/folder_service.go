@@ -142,6 +142,10 @@ func (s *FolderService) UpdateFolderModules(userID, folderID int, moduleMap map[
 		return err
 	}
 
+	if len(modules) == 0 {
+		return util.NewPublicError(util.ErrCodeNotFound, "folder not found or unauthorized")
+	}
+
 	currentSet := make(map[int]struct{}, len(modules))
 	for _, m := range modules {
 		currentSet[m.ID] = struct{}{}

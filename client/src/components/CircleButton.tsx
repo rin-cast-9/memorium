@@ -3,26 +3,28 @@
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 
 type CircleButtonProps = {
-    type?: ButtonType.PRIMARY | ButtonType.SECONDARY;
-    size?: ButtonSize.NORMAL | ButtonSize.SMALL; 
+    type?: ButtonType;
+    size?: ButtonSize; 
     onClick: () => void;
     icon: string;
     className?: string;
+    customIconSize?: string;
 }
 
 const CircleButton = ({
-    type = ButtonType.PRIMARY,
+    type = ButtonType.SECONDARY,
     size = ButtonSize.NORMAL,
     onClick,
     icon,
-    className
+    className,
+    customIconSize
 }: CircleButtonProps) => {
     const typeStyles: Record<ButtonType, string> = {
-        [ButtonType.PRIMARY]: "bg-[var(--color-red)]",
+        [ButtonType.PRIMARY]: "",
         [ButtonType.SECONDARY]: "bg-[var(--color-black-1)]",
         [ButtonType.GHOST]: "",
         [ButtonType.STROKE]: "",
-        [ButtonType.DANGER]: "",
+        [ButtonType.DANGER]: "bg-[var(--color-red)]",
         [ButtonType.DISABLED]: "",
         [ButtonType.NEUTRAL]: "",
     };
@@ -42,7 +44,7 @@ const CircleButton = ({
             onClick={onClick}
             className={`flex items-center justify-center hover:cursor-pointer rounded-full ${selectedSize} ${selectedStyle} ${border} ${className}`}
         >
-            <img src={icon} alt="" className="w-[12px] h-[12px]" />
+            <img src={icon} alt="" className={customIconSize ?? `w-[12px] h-[12px]`} />
         </button>
     );
 };

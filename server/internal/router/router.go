@@ -29,10 +29,15 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	folderRepo := repo.NewFolderRepo(db)
 	moduleRepo := repo.NewModuleRepo(db)
+	cardRepo := repo.NewCardRepo(db)
+
 	folderService := service.NewFolderService(folderRepo, moduleRepo)
 	moduleService := service.NewModuleService(moduleRepo, folderRepo)
+	cardService := service.NewCardService(cardRepo, moduleRepo)
+
 	folderHandler := handler.NewFolderHandler(folderService)
 	moduleHandler := handler.NewModuleHandler(moduleService)
+	cardHandler := handler.NewCardHandler(cardService)
 
 	router.GET("/ping", middleware.JWTAuthMiddleware(), handler.PingHandler(db))
 	router.POST("/register", authHandler.Register)
@@ -58,6 +63,15 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		moduleRoutes.PUT("/:id/folders", moduleHandler.UpdateModuleFolders)
 		moduleRoutes.PUT("/:id", moduleHandler.RenameModule)
 		moduleRoutes.DELETE("/:id", moduleHandler.DeleteModule)
+	}
+
+	cardRoutes := router.Group("/cards", middleware.JWTAuthMiddleware())
+	{
+		cardRoutes.GET("/:id", cardHandler.GetCard)
+		cardRoutes.GET("/module/:moduleID", cardHandler.ListCards)
+		cardRoutes.POST("", cardHandler.CreateCard)
+		cardRoutes.PUT("/:id", cardHandler.EditCard)
+		cardRoutes.DELETE("/:id", cardHandler.DeleteCard)
 	}
 
 	util.Logger.Info("Routes registered")

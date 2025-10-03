@@ -25,3 +25,11 @@ CREATE TABLE folder_modules (
     module_id INT NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
     PRIMARY KEY (folder_id, module_id)
 );
+
+CREATE TABLE cards (
+    id SERIAL PRIMARY KEY,
+    module_id INT NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
+    front TEXT NOT NULL,
+    back TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);

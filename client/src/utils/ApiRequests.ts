@@ -1,4 +1,5 @@
 import { apiUrl, parseApiResponse } from "./api";
+import { CardApi } from "./Card";
 import { Folder } from "./Folder";
 import { Module } from "./Module";
 
@@ -56,6 +57,14 @@ export const getFolderApi = async (id: number) => {
     });
 
     return parseApiResponse<Folder>(response);
+};
+
+export const listFoldersByModuleApi = async (id: number) => {
+    const response = await apiFetch(`${apiUrl}/modules/${id}/folders`, {
+        method: "GET",
+    });
+
+    return parseApiResponse<number[]>(response);
 };
 
 export const createModuleApi = async (displayName: string) => {
@@ -121,4 +130,61 @@ export const updateFolderModulesApi = async (id: number, modulesByFolderMap: Map
     });
 
     return parseApiResponse<{}>(response);
+};
+
+export const updateModuleFoldersApi = async (id: number, foldersByModuleMap: Map<number, boolean>) => {
+    const folderMap: Record<number, boolean> = {};
+
+    foldersByModuleMap.forEach((selected, folderId) => {
+        folderMap[folderId] = selected;
+    });
+
+    const response = await apiFetch(`${apiUrl}/modules/${id}/folders`, {
+        method: "PUT",
+        body: JSON.stringify({ folder_map: folderMap })
+    });
+
+    return parseApiResponse<{}>(response);
+};
+
+export const listCardsByModuleApi = async (moduleId: number) => {
+    const response = await apiFetch(`${apiUrl}/cards/module/${moduleId}`, {
+        method: "GET"
+    });
+
+    return parseApiResponse<CardApi[]>(response);
+};
+
+export const getCardApi = async (cardId: number) => {
+    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+        method: "GET"
+    });
+
+    return parseApiResponse<CardApi>(response);
+};
+
+export const createCardApi = async (moduleId: number, front: string, back: string) => {
+    const response = await apiFetch(`${apiUrl}/cards`, {
+        method: "POST",
+        body: JSON.stringify({ module_id: moduleId, front: front, back: back })
+    });
+
+    return parseApiResponse<CardApi>(response);
+};
+
+export const deleteCardApi = async (cardId: number) => {
+    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+        method: "DELETE"
+    });
+
+    return parseApiResponse<{}>(response);
+};
+
+export const editCardApi = async (cardId: number, front: string, back: string) => {
+    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+        method: "PUT",
+        body: JSON.stringify({ front: front, back: back })
+    });
+
+    return parseApiResponse<CardApi>(response);
 };

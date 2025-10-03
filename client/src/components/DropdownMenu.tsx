@@ -44,7 +44,7 @@ const DropdownMenu = ({
 
             {open && (
                 <div
-                    className="absolute flex flex-col justify-center gap-[10px] py-[12px] right-0 mt-[15px] min-w-[184px] rounded-[12px] bg-[var(--color-black-1)] border border-[var(--color-stroke)] z-40"
+                    className="absolute flex flex-col justify-center gap-[10px] py-[12px] right-0 mt-[15px] min-w-[184px] w-max rounded-[12px] bg-[var(--color-black-1)] border border-[var(--color-stroke)] z-40"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {items.map((item, idx) => (

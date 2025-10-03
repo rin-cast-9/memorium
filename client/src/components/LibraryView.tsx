@@ -1,6 +1,5 @@
 "use client";
 
-import { apiUrl, parseApiResponse } from "@/utils/api";
 import { Folder } from "@/utils/Folder";
 import { LibraryTabs } from "@/utils/LibraryTabs";
 import { useTranslations } from "next-intl";
@@ -12,12 +11,16 @@ import ValidatedInput from "./ValidatedInput";
 import FoldersListView from "./FoldersListView";
 import LibraryTabsComponent from "./LibraryTabsComponent";
 import { validateFolderDisplayName } from "@/utils/validators";
-import { createFolderApi, deleteFolderApi, listFoldersApi, listModulesApi, renameFolderApi } from "@/utils/ApiRequests";
+import { createFolderApi, deleteFolderApi, deleteModuleApi, listFoldersApi, listFoldersByModuleApi, listModulesApi, renameFolderApi, updateModuleFoldersApi } from "@/utils/ApiRequests";
 import { Module } from "@/utils/Module";
 import ModulesListView from "./ModulesListView";
+import { useRouter } from "next/navigation";
+import ChecklistView from "./ChecklistView";
+import { ModalTitleAlignment } from "@/utils/ModalTitleAlignment";
 
 const LibraryView = () => {
     const t = useTranslations();
+    const router = useRouter();
 
     const [activeTab, setActiveTab] = useState<LibraryTabs>(LibraryTabs.FOLDERS);
 
@@ -25,6 +28,11 @@ const LibraryView = () => {
     const [modules, setModules] = useState<Module[]>([]);
     const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
+    const [foldersByModule, setFoldersByModule] = useState<number[]>([]);
+    const [selectedFolders, setSelectedFolders] = useState<Set<number>>(new Set());
+    const [isSaveToFolderModalOpen, setIsSaveToFolderModalOpen] = useState(false);
 
     const [folderDisplayName, setFolderDisplayName] = useState("");
     const [folderDisplayNameError, setFolderDisplayNameError] = useState<string | null>(null);
@@ -74,6 +82,25 @@ const LibraryView = () => {
         }
     };
 
+    const createModule = () => router.push("/library/module/create");
+
+    const editModule = (id: number) => {
+        router.push(`/library/module/${id}/edit`);
+    };
+
+    const deleteModule = async (id: number) => {
+        try {
+            const { error } = await deleteModuleApi(id);
+
+            if (!error) {
+                setModules(prev => prev.filter(m => m.id !== id))
+            }
+        }
+        catch (e) {
+            alert(e);
+        }
+    };
+
     useEffect(() => {
         const fetchFolders = async () => {
             setLoading(true);
@@ -110,6 +137,51 @@ const LibraryView = () => {
         fetchModules();
     }, [activeTab]);
 
+    const openSaveToFolderModal = async (id: number) => {
+        setActiveModuleId(id);
+
+        const { data } = await listFoldersByModuleApi(id);
+        const foldersId = data ?? [];
+        setFoldersByModule(foldersId);
+        setSelectedFolders(new Set(foldersId));
+        setIsSaveToFolderModalOpen(true);
+    };
+
+    const handleSubmitFoldersToModule = async (selected: Set<number>, newFolderDisplayName: string) => {
+        if (!activeModuleId) {
+            return;
+        }
+
+        try {
+            let updatedFolders = [...folders];
+            let updatedSelected = new Set(selected);
+
+            if (newFolderDisplayName.trim()) {
+                const { data } = await createFolderApi(newFolderDisplayName);
+
+                if (data) {
+                    updatedFolders = [...folders, data];
+                    setFolders(updatedFolders);
+
+                    updatedSelected.add(data.id);
+                    setSelectedFolders(updatedSelected);
+                }
+            }
+
+            const foldersByModuleMap = new Map<number, boolean>(
+                updatedFolders.map(f => [f.id, updatedSelected.has(f.id)])
+            );
+
+            await updateModuleFoldersApi(activeModuleId, foldersByModuleMap);
+
+            setFoldersByModule(updatedFolders.filter(f => updatedSelected.has(f.id)).map(f => f.id));
+            setIsSaveToFolderModalOpen(false);
+        }
+        catch (e) {
+            alert(e);
+        }
+    };
+
     const renderTab = (tab: LibraryTabs) => {
         switch (tab) {
             case LibraryTabs.FOLDERS:
@@ -126,7 +198,10 @@ const LibraryView = () => {
                 return (
                     <ModulesListView
                         items={modules}
-                        onCreate={() => {}}
+                        onCreate={createModule}
+                        onEdit={editModule}
+                        onSaveToFolderModal={openSaveToFolderModal}
+                        onDelete={deleteModule}
                     />
                 );
         }
@@ -159,7 +234,7 @@ const LibraryView = () => {
                             size={ButtonSize.MEDIUM}
                             type={ButtonType.PRIMARY}
                             htmlType="button"
-                            onClick={() => {}}
+                            onClick={createModule}
                         />
                     }
                 </div>
@@ -209,6 +284,24 @@ const LibraryView = () => {
                             />
                         </div>
                     </form>
+                </Modal>
+            )}
+            {isSaveToFolderModalOpen && (
+                <Modal
+                    title={t("saveToFolder")}
+                    titleAlign={ModalTitleAlignment.LEFT}
+                    onClose={() => {
+                        setIsSaveToFolderModalOpen(false);
+                        setActiveModuleId(null);
+                    }}
+                >
+                    <ChecklistView
+                        items={folders}
+                        selected={selectedFolders}
+                        setSelected={setSelectedFolders}
+                        onSubmit={handleSubmitFoldersToModule}
+                        placeholder={t("createNewFolder")}
+                    />
                 </Modal>
             )}
         </>

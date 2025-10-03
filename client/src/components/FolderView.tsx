@@ -52,12 +52,12 @@ const FolderView = ({
                                 setIsRenameFolderModalOpen(true);
                                 setNewDisplayName(displayName);
                             },
-                            icon: "icons/icon-edit-1.svg"
+                            icon: "/icons/icon-edit-1.svg"
                         },
                         {
                             label: t("delete"),
                             onClick: () => setIsDeleteConfirmationModalOpen(true),
-                            icon: "icons/icon-module-1.svg"
+                            icon: "/icons/icon-module-1.svg"
                         }
                     ]}
                 />

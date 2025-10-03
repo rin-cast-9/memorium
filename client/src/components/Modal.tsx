@@ -2,6 +2,7 @@
 
 import { ModalTitleAlignment } from "@/utils/ModalTitleAlignment";
 import CircleButton from "./CircleButton";
+import { ButtonType } from "@/utils/Button.types";
 
 type ModalProps = {
     title: string;
@@ -28,9 +29,10 @@ const Modal = ({
                 </div>
 
                 <CircleButton
+                    type={ButtonType.DANGER}
                     onClick={onClose}
                     icon="/icons/icon-close.svg"
-                    className="absolute -right-[60px] top-0"
+                    className="absolute right-[-60px] top-0"
                 />
             </div>
         </div>

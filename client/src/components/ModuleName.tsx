@@ -26,7 +26,7 @@ const ModuleName = ({
                 placeholder={t("enterModuleName")}
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                className="font-small-text placeholder-[var(--color-grey)]/50 outline-none"
+                className="font-small-text text-[var(--color-white)]/50 placeholder-[var(--color-grey)]/50 outline-none"
             />
         </div>
     );

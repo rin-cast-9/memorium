@@ -8,11 +8,17 @@ import EmptyLibrary from "./EmptyLibrary";
 type ModulesListViewProps = {
     items: Module[];
     onCreate: () => void;
-}
+    onEdit: (id: number) => void;
+    onSaveToFolderModal: (id: number) => void;
+    onDelete: (id: number) => void;
+};
 
 const ModulesListView = ({
     items,
     onCreate,
+    onEdit,
+    onSaveToFolderModal,
+    onDelete,
 }: ModulesListViewProps) => {
     const t = useTranslations();
 
@@ -33,6 +39,9 @@ const ModulesListView = ({
                     key={module.id}
                     id={module.id}
                     displayName={module.display_name}
+                    onEdit={onEdit}
+                    onSaveToFolderModal={onSaveToFolderModal}
+                    onDelete={onDelete}
                 />
             ))}
         </div>
