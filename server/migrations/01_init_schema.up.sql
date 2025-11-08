@@ -33,3 +33,42 @@ CREATE TABLE cards (
     back TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE user_card_progresses (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id INT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+    correct_count INT NOT NULL DEFAULT 0,
+    incorrect_count INT NOT NULL DEFAULT 0,
+    last_seen_at TIMESTAMPTZ,
+    CONSTRAINT user_card_unique UNIQUE(user_id, card_id)
+);
+
+CREATE TABLE tests (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    module_id INT NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
+    is_review_only BOOLEAN NOT NULL,
+    started_at TIMESTAMPTZ DEFAULT NOW(),
+    finished_at TIMESTAMPTZ,
+    correct_answers INT DEFAULT 0,
+    total_questions INT DEFAULT 0
+);
+
+CREATE TABLE question_types (
+    id SERIAL PRIMARY KEY,
+    display_name VARCHAR(20) NOT NULL
+);
+
+INSERT INTO question_types (display_name) VALUES
+('select'),
+('spell');
+
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,
+    test_id INT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+    card_id INT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+    question_type INT NOT NULL REFERENCES question_types(id),
+    is_correct BOOLEAN,
+    answered_at TIMESTAMPTZ
+);

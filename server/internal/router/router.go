@@ -30,14 +30,26 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	folderRepo := repo.NewFolderRepo(db)
 	moduleRepo := repo.NewModuleRepo(db)
 	cardRepo := repo.NewCardRepo(db)
+	progressRepo := repo.NewProgressRepo(db)
+	questionRepo := repo.NewQuestionRepo(db)
+	testRepo := repo.NewTestRepo(db)
 
 	folderService := service.NewFolderService(folderRepo, moduleRepo)
 	moduleService := service.NewModuleService(moduleRepo, folderRepo)
 	cardService := service.NewCardService(cardRepo, moduleRepo)
+	progressService := service.NewProgressService(db, progressRepo, cardRepo)
+	var progressCategorizer service.ProgressCategorizer = progressService
+	var progressUpdater service.ProgressUpdater = progressService
+	questionService := service.NewQuestionService(questionRepo, testRepo, progressCategorizer, progressUpdater, db)
+	var questionAnswerer service.QuestionAnswerer = questionService
+	var progressToucher service.ProgressToucher = progressService
+	testService := service.NewTestService(testRepo, questionRepo, cardRepo, questionAnswerer, progressRepo, progressToucher)
 
 	folderHandler := handler.NewFolderHandler(folderService)
 	moduleHandler := handler.NewModuleHandler(moduleService)
 	cardHandler := handler.NewCardHandler(cardService)
+	progressHandler := handler.NewProgressHandler(progressService)
+	testHandler := handler.NewTestHandler(testService, questionService, cardService)
 
 	router.GET("/ping", middleware.JWTAuthMiddleware(), handler.PingHandler(db))
 	router.POST("/register", authHandler.Register)
@@ -72,6 +84,23 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		cardRoutes.POST("", cardHandler.CreateCard)
 		cardRoutes.PUT("/:id", cardHandler.EditCard)
 		cardRoutes.DELETE("/:id", cardHandler.DeleteCard)
+	}
+
+	progressRoutes := router.Group("/progress", middleware.JWTAuthMiddleware())
+	{
+		progressRoutes.GET("/:module_id", progressHandler.GetProgress)
+	}
+
+	testRoutes := router.Group("/test", middleware.JWTAuthMiddleware())
+	{
+		testRoutes.POST("/start", testHandler.StartTest)
+		testRoutes.POST("/:id/finish", testHandler.FinishTest)
+	}
+
+	reviewRoutes := router.Group("/review", middleware.JWTAuthMiddleware())
+	{
+		reviewRoutes.POST("/start", testHandler.StartReview)
+		reviewRoutes.POST("/:id/finish", testHandler.FinishReview)
 	}
 
 	util.Logger.Info("Routes registered")

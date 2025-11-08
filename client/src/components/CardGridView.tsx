@@ -1,24 +1,26 @@
 "use client";
 
 import { Card } from "@/utils/Card";
-import { useTranslations } from "next-intl";
-import CardView from "./CardView";
 import TermInput from "./TermInput";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 
 type CardGridViewProps = {
+    label: string;
+    buttonLabel: string;
     cards: Card[];
+    onButtonClick: () => void;
 };
 
 const CardGridView = ({
+    label,
+    buttonLabel,
     cards,
+    onButtonClick,
 }: CardGridViewProps) => {
-    const t = useTranslations();
-
     return (
         <div className="flex flex-col">
-            <p className="content-regular text-[var(--color-grey)]">{t("new")} ({cards.length})</p>
+            <p className="content-regular text-[var(--color-grey)]">{label} ({cards.length})</p>
 
             <hr className="w-full mt-[14px] border-t border-[var(--color-grey)]/20"/>
 
@@ -36,10 +38,10 @@ const CardGridView = ({
 
             <div className="flex justify-center mt-[30px]">
                 <Button
-                    label={t("learnWords")}
+                    label={buttonLabel}
                     size={ButtonSize.NORMAL}
                     type={ButtonType.PRIMARY}
-                    onClick={() => {}}
+                    onClick={onButtonClick}
                 />
             </div>
         </div>

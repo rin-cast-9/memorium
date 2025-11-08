@@ -65,4 +65,13 @@ const (
 	ErrCodeCardFetchFailed                   = "CARD_FETCH_FAILED"
 	ErrCodeCardDeletionFailed                = "CARD_DELETION_FAILED"
 	ErrCodeCardUpdateFailed                  = "CARD_UPDATE_FAILED"
+	ErrCodeProgressRetrievalFailed           = "PROGRESS_RETRIEVAL_FAILED"
+	ErrCodeDBTransactionFailed               = "DB_TRANSACTION_FAILED"
+	ErrCodeProgressUpdateFailed              = "PROGRESS_UPDATE_FAILED"
+	ErrCodeProgressCreationFailed            = "PROGRESS_CREATION_FAILED"
+	ErrCodeTestCreationFailed                = "TEST_CREATION_FAILED"
+	ErrCodeTestUpdateFailed                  = "TEST_UPDATE_FAILED"
+	ErrCodeTestRetrievalFailed               = "TEST_RETRIEVAL_FAILED"
+	ErrCodeTestDeletionFailed                = "TEST_DELETION_FAILED"
+	ErrCodeForbidden                         = "FORBIDDEN"
 )

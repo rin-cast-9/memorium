@@ -1,7 +1,12 @@
+import { Answer } from "./Answer";
 import { apiUrl, parseApiResponse } from "./api";
 import { CardApi } from "./Card";
+import { FinishedTestSummary } from "./FinishedTestSummary";
 import { Folder } from "./Folder";
 import { Module } from "./Module";
+import { ReviewResult } from "./ReviewResult";
+import { StartReviewResponse } from "./StartReviewRequest";
+import { StartTestResponse } from "./StartTestResponse";
 
 const getAuthToken = () => localStorage.getItem("token") || "";
 
@@ -187,4 +192,54 @@ export const editCardApi = async (cardId: number, front: string, back: string) =
     });
 
     return parseApiResponse<CardApi>(response);
+};
+
+export const startTestApi = async (moduleId: number, isReviewOnly: boolean) => {
+    const response = await apiFetch(`${apiUrl}/test/start`, {
+        method: "POST",
+        body: JSON.stringify({
+            module_id: moduleId,
+            is_review_only: isReviewOnly,
+        }),
+    });
+
+    return parseApiResponse<StartTestResponse>(response);
+};
+
+export const finishTestApi = async (testId: number, answers: Answer[]) => {
+    const response = await apiFetch(`${apiUrl}/test/${testId}/finish`, {
+        method: "POST",
+        body: JSON.stringify({ answers }),
+    });
+
+    return parseApiResponse<FinishedTestSummary>(response);
+};
+
+export const startReviewApi = async (moduleId: number, reviewType: number) => {
+    const response = await apiFetch(`${apiUrl}/review/start`, {
+        method: "POST",
+        body: JSON.stringify({
+            module_id: moduleId,
+            review_type: reviewType,
+        }),
+    });
+
+    return parseApiResponse<StartReviewResponse>(response);
+};
+
+export const finishReviewApi = async (moduleId: number, results: ReviewResult[]) => {
+    const response = await apiFetch(`${apiUrl}/review/${moduleId}/finish`, {
+        method: "POST",
+        body: JSON.stringify({ review_results: results }),
+    });
+
+    return parseApiResponse<void>(response);
+};
+
+export const getProgressByModuleApi = async (moduleId: number) => {
+    const response = await apiFetch(`${apiUrl}/progress/${moduleId}`, {
+        method: "GET",
+    });
+
+    return parseApiResponse<Record<number, number>>(response);
 };

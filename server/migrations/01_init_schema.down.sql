@@ -3,3 +3,5 @@ DROP TABLE IF EXISTS folders;
 DROP TABLE IF EXISTS modules;
 DROP TABLE IF EXISTS folder_modules;
 DROP TABLE IF EXISTS cards;
+DROP TABLE IF EXISTS user_card_progresses;
+DROP TABLE IF EXISTS tests;
