@@ -29,16 +29,16 @@ const ValidatedInput = ({
 }: ValidatedInputProps) => {
     const t = useTranslations();
 
-    const [error, setError] = useState<string | null> (null);
+    // const [error, setError] = useState<string | null> (null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const v = e.target.value;
         setValue(v);
-        setError(validate(v, t));
+        // setError(validate(v, t));
     };
 
-    const isSuccess = showSuccess && value.length > 0 && !error;
-    const finalError = serverError ?? error;
+    // const isSuccess = showSuccess && value.length > 0 && !error;
+    const finalError = serverError;
 
     return (
         <FormInput
@@ -47,7 +47,6 @@ const ValidatedInput = ({
             value={value}
             onChange={handleChange}
             error={finalError ?? undefined}
-            success={isSuccess}
             label={label}
             className={className}
         />

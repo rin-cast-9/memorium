@@ -36,8 +36,8 @@ func (h *TestHandler) StartTest(c *gin.Context) {
 	userID := c.GetInt("userID")
 
 	var req struct {
-		ModuleID     int  `json:"module_id" binding:"required"`
-		IsReviewOnly bool `json:"is_review_only" binding:"required"`
+		ModuleID     int   `json:"module_id" binding:"required"`
+		IsReviewOnly *bool `json:"is_review_only" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -45,13 +45,13 @@ func (h *TestHandler) StartTest(c *gin.Context) {
 		return
 	}
 
-	test, err := h.testService.StartTest(userID, req.ModuleID, req.IsReviewOnly)
+	test, err := h.testService.StartTest(userID, req.ModuleID, *req.IsReviewOnly)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
-	questions, err := h.questionService.CreateQuestionsForTest(userID, test.ID, req.IsReviewOnly)
+	questions, err := h.questionService.CreateQuestionsForTest(userID, test.ID, *req.IsReviewOnly)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -65,7 +65,7 @@ func (h *TestHandler) StartTest(c *gin.Context) {
 
 	payload := buildQuestionPayloadFromCards(questions, cards)
 
-	util.Logger.Info("Test started", zap.Int("userID", userID), zap.Int("moduleID", req.ModuleID), zap.Int("testID", test.ID), zap.Bool("isReviewOnly", req.IsReviewOnly))
+	util.Logger.Info("Test started", zap.Int("userID", userID), zap.Int("moduleID", req.ModuleID), zap.Int("testID", test.ID), zap.Bool("isReviewOnly", *req.IsReviewOnly))
 
 	c.JSON(http.StatusCreated, gin.H{
 		"test":    test,

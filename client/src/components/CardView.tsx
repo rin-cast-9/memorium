@@ -61,7 +61,7 @@ const CardView = ({
                 className="absolute bottom-[30px] left-1/2 -translate-x-1/2 flex items-center gap-[10px]"
                 onClick={(e) => e.stopPropagation()}
             >
-                <CircleButton
+                {/* <CircleButton
                     type={ButtonType.DANGER}
                     size={ButtonSize.SMALL}
                     icon="/icons/icon-edit-2.svg"
@@ -73,7 +73,7 @@ const CardView = ({
                     icon="/icons/icon-sound.svg"
                     customIconSize="w-[12px] h-[11px]"
                     onClick={() => {}}
-                />
+                /> */}
             </div>
 
             <div className="absolute bottom-[30px] right-[30px] flex items-center gap-[12px]">

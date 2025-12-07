@@ -3,7 +3,7 @@ import { apiUrl, parseApiResponse } from "./api";
 import { CardApi } from "./Card";
 import { FinishedTestSummary } from "./FinishedTestSummary";
 import { Folder } from "./Folder";
-import { Module } from "./Module";
+import { Module, ModuleCount } from "./Module";
 import { ReviewResult } from "./ReviewResult";
 import { StartReviewResponse } from "./StartReviewRequest";
 import { StartTestResponse } from "./StartTestResponse";
@@ -158,6 +158,14 @@ export const listCardsByModuleApi = async (moduleId: number) => {
     });
 
     return parseApiResponse<CardApi[]>(response);
+};
+
+export const countCardsByModuleApi = async (moduleId: number) => {
+    const response = await apiFetch(`${apiUrl}/modules/${moduleId}/count`, {
+        method: "GET"
+    });
+
+    return parseApiResponse<ModuleCount>(response);
 };
 
 export const getCardApi = async (cardId: number) => {

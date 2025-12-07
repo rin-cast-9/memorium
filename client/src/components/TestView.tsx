@@ -34,6 +34,8 @@ const TestView = ({
                 return;
             }
 
+            console.log(data);
+
             setTestId(data.test.id);
             setQuestions(data.payload);
             setLoading(false);

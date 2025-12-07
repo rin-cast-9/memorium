@@ -14,6 +14,7 @@ type CardRepo interface {
 	EditCard(cardID int, updates *dto.CardUpdate) error
 	GetCardsByModule(moduleID int) ([]model.Card, error)
 	GetCardById(cardID int) (*model.Card, error)
+	CountByModule(moduleID int) (int, error)
 }
 
 type cardRepo struct {
@@ -93,6 +94,17 @@ func (r *cardRepo) GetCardsByModule(moduleID int) ([]model.Card, error) {
 
 	util.Logger.Info("Cards fetched", zap.Int("moduleID", moduleID), zap.Int("count", len(cards)))
 	return cards, nil
+}
+
+func (r *cardRepo) CountByModule(moduleID int) (int, error) {
+	var n int64
+	res := r.db.Model(&model.Card{}).Where("module_id = ?", moduleID).Count(&n)
+	if res.Error != nil {
+		util.Logger.Error("Failed to count cards", zap.Int("moduleID", moduleID), zap.Error(res.Error))
+		return -1, res.Error
+	}
+
+	return int(n), nil
 }
 
 func (r *cardRepo) GetCardById(cardID int) (*model.Card, error) {

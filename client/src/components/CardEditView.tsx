@@ -43,7 +43,6 @@ const CardEditView = ({
                     value={card.back}
                     setValue={(v) => updateCard(index, { back: v })}
                     placeholder={t("enterDefinition")}
-                    icon="/icons/icon-world.svg"
                 />
             </div>
         </div>

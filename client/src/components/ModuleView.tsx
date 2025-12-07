@@ -1,10 +1,11 @@
 import { useTranslations } from "next-intl";
 import DropdownMenu from "./DropdownMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "./Button";
 import Modal from "./Modal";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { useRouter } from "next/navigation";
+import { countCardsByModuleApi } from "@/utils/ApiRequests";
 
 type ModuleViewProps = {
     id: number;
@@ -26,13 +27,41 @@ const ModuleView = ({
 
     const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
 
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let active = true;
+
+        countCardsByModuleApi(id).then(res => {
+            if (!active) {
+                return;
+            }
+            setCount(res.data?.amount ?? 0);
+        }).catch(() => {
+            if (!active) {
+                return;
+            }
+            setCount(0);
+        });
+
+        return () => {
+            active = false;
+        }
+    }, [id]);
+
     return (
         <>
             <div
                 className="flex items-center justify-between bg-[var(--color-black-2)] border border-[var(--color-stroke)] rounded-[20px] px-[30px] h-[90px] hover:cursor-pointer"
-                onClick={() => router.push(`/library/module/${id}`)}
+                onClick={() => {
+                    count === 0 ? router.push(`/library/module/${id}/edit`) : router.push(`/library/module/${id}`);
+                }}
             >
-                <p className="font-content text-[var(--color-white)]">{displayName}</p>
+                <div className="flex items-center gap-[12px]">
+                    <p className="font-content text-[var(--color-white)]">{displayName}</p>
+                    <div className="h-[22px] w-px bg-[var(--color-stroke)]"/>
+                    <p className="font-content text-[var(--color-grey)]">{count} {t("termsCount")}</p>
+                </div>
                 <DropdownMenu
                     trigger={
                         <button>

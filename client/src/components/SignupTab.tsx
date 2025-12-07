@@ -1,12 +1,9 @@
 "use client";
 
-import { AuthTabs } from "@/utils/AuthTabs";
-import Divider from "./Divider";
 import ValidatedInput from "./ValidatedInput";
 import PasswordInput from "./PasswordInput";
 import Checkbox from "./Checkbox";
 import { useState } from "react";
-import YandexAuthButton from "./YandexAuthButton";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { validateEmail, validateFullName } from "@/utils/validators";
@@ -41,12 +38,6 @@ const SignupTab = ({
 
     return (
         <div className="mt-[30px]">
-            <YandexAuthButton
-                activeTab={AuthTabs.SIGNUP}
-            />
-
-            <Divider/>
-
             <form onSubmit={onSubmit}>
                 <ValidatedInput
                     value={fullName}

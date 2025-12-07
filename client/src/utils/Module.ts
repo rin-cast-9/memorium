@@ -4,3 +4,7 @@ export type Module = {
     display_name: string;
     created_at: string;
 };
+
+export type ModuleCount = {
+    amount: number
+};

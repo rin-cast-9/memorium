@@ -14,10 +14,11 @@ import (
 type ModuleService struct {
 	moduleRepo repo.ModuleRepo
 	folderRepo repo.FolderRepo
+	cardRepo   repo.CardRepo
 }
 
-func NewModuleService(moduleRepo repo.ModuleRepo, folderRepo repo.FolderRepo) *ModuleService {
-	return &ModuleService{moduleRepo: moduleRepo, folderRepo: folderRepo}
+func NewModuleService(moduleRepo repo.ModuleRepo, folderRepo repo.FolderRepo, cardRepo repo.CardRepo) *ModuleService {
+	return &ModuleService{moduleRepo: moduleRepo, folderRepo: folderRepo, cardRepo: cardRepo}
 }
 
 func (s *ModuleService) Create(userID int, name string) (*model.Module, error) {
@@ -176,4 +177,13 @@ func (s *ModuleService) UpdateModuleFolders(userID, moduleID int, folderMap map[
 	}
 
 	return nil
+}
+
+func (s *ModuleService) CountCardsInModule(moduleID int) (int, error) {
+	count, err := s.cardRepo.CountByModule(moduleID)
+	if err != nil {
+		return -1, util.NewPublicError(util.ErrCodeCardFetchFailed, "couldn't count cards")
+	}
+
+	return count, nil
 }

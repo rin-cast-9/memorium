@@ -168,3 +168,19 @@ func (h *ModuleHandler) UpdateModuleFolders(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *ModuleHandler) CountCardsInModule(c *gin.Context) {
+	moduleID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		handleError(c, util.NewPublicError(util.ErrCodeInvalidRequest, "invalid module id"))
+		return
+	}
+
+	count, err := h.moduleService.CountCardsInModule(moduleID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"amount": count})
+}

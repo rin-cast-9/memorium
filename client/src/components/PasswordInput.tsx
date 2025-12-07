@@ -71,7 +71,6 @@ const PasswordInput = ({
             icon={icon}
             onIconClick={() => setVisible((prev) => !prev)}
             success={success}
-            forgotPasswordLink={forgotPasswordLink}
             className={className}
         />
     );

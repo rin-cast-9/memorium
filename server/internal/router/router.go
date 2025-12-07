@@ -35,7 +35,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	testRepo := repo.NewTestRepo(db)
 
 	folderService := service.NewFolderService(folderRepo, moduleRepo)
-	moduleService := service.NewModuleService(moduleRepo, folderRepo)
+	moduleService := service.NewModuleService(moduleRepo, folderRepo, cardRepo)
 	cardService := service.NewCardService(cardRepo, moduleRepo)
 	progressService := service.NewProgressService(db, progressRepo, cardRepo)
 	var progressCategorizer service.ProgressCategorizer = progressService
@@ -75,6 +75,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		moduleRoutes.PUT("/:id/folders", moduleHandler.UpdateModuleFolders)
 		moduleRoutes.PUT("/:id", moduleHandler.RenameModule)
 		moduleRoutes.DELETE("/:id", moduleHandler.DeleteModule)
+		moduleRoutes.GET("/:id/count", moduleHandler.CountCardsInModule)
 	}
 
 	cardRoutes := router.Group("/cards", middleware.JWTAuthMiddleware())

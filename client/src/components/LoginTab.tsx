@@ -1,8 +1,5 @@
-import { AuthTabs } from "@/utils/AuthTabs";
-import Divider from "./Divider";
 import ValidatedInput from "./ValidatedInput";
 import PasswordInput from "./PasswordInput";
-import YandexAuthButton from "./YandexAuthButton";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { validateEmail } from "@/utils/validators";
@@ -29,12 +26,6 @@ const LoginTab = ({
 
     return (
         <div className="mt-[30px]">
-            <YandexAuthButton
-                activeTab={AuthTabs.SIGNUP}
-            />
-
-            <Divider/>
-
             <form onSubmit={onSubmit}>
                 <div className="flex w-full gap-[20px] mt-[20px]">
                     <ValidatedInput
