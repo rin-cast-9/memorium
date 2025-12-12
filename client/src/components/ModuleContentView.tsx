@@ -1,6 +1,6 @@
 "use client";
 
-import { getModuleApi, getProgressByModuleApi, listCardsByModuleApi, startReviewApi, startTestApi } from "@/utils/ApiRequests";
+import { createFolderApi, deleteFolderApi, deleteModuleApi, getModuleApi, getProgressByModuleApi, listCardsByModuleApi, listFoldersApi, listFoldersByModuleApi, startReviewApi, startTestApi, updateFolderModulesApi, updateModuleFoldersApi } from "@/utils/ApiRequests";
 import { Card } from "@/utils/Card";
 import { Module } from "@/utils/Module";
 import { useEffect, useState } from "react";
@@ -15,6 +15,9 @@ import { TestMode } from "@/utils/TestMode";
 import Modal from "./Modal";
 import { ModalTitleAlignment } from "@/utils/ModalTitleAlignment";
 import ToggleSwitch from "./ToggleSwitch";
+import DropdownMenu from "./DropdownMenu";
+import ChecklistView from "./ChecklistView";
+import { Folder } from "@/utils/Folder";
 
 type ModuleContentViewProps = {
     moduleId: number;
@@ -75,6 +78,66 @@ const ModuleContentView = ({
         router.push(`/review?moduleId=${moduleId}&mode=${mode}`);
     };
 
+    const handleEdit = () => {
+        router.push(`/module/${moduleId}/edit`);
+    };
+
+    const [isSaveToFolderModalOpen, setIsSaveToFolderModalOpen] = useState(false);
+    const [selectedFolders, setSelectedFolders] = useState<Set<number>>(new Set());
+    const [folders, setFolders] = useState<Folder[]>([]);
+
+    const openSaveToFolder = async () => {
+        setIsSaveToFolderModalOpen(true);
+
+        const { data: foldersByModule } = await listFoldersByModuleApi(moduleId);
+        const foldersId = foldersByModule ?? [];
+        setSelectedFolders(new Set(foldersId));
+
+        const { data: folders } = await listFoldersApi();
+        setFolders(folders ?? []);
+    };
+
+    const handleSubmitFoldersToModule = async (selected: Set<number>, newFolderDisplayName: string) => {
+        try {
+            let updatedFolders = [...folders];
+            let updatedSelected = new Set(selected);
+
+            if (newFolderDisplayName.trim()) {
+                const { data } = await createFolderApi(newFolderDisplayName);
+
+                if (data) {
+                    updatedFolders = [...folders, data];
+                    setFolders(updatedFolders);
+
+                    updatedSelected.add(data.id);
+                    setSelectedFolders(updatedSelected);
+                }
+            }
+
+            const foldersByModuleMap = new Map<number, boolean>(
+                updatedFolders.map(f => [f.id, updatedSelected.has(f.id)])
+            );
+
+            await updateModuleFoldersApi(moduleId, foldersByModuleMap);
+
+            setIsSaveToFolderModalOpen(false);
+        }
+        catch (e) {
+            alert(e);
+        }
+    };
+
+    const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] = useState(false);
+    const handleDelete = async () => {
+        const { data, error } = await deleteModuleApi(moduleId);
+        if (error) {
+            alert(error);
+            return;
+        }
+
+        router.push(`/library`);
+    };
+
     return (
         <>
             <div className="mt-[50px] mx-[130px] mb-[97px] flex flex-col">
@@ -90,11 +153,32 @@ const ModuleContentView = ({
                         }
                     />
 
-                    <CircleButton
-                        type={ButtonType.DANGER}
-                        onClick={() => setIsTestSettingModalOpen(true)}
-                        icon="/icons/icon-menu.svg"
-                        customIconSize="w-[24px] h-[6px]"
+                    <DropdownMenu
+                        trigger={
+                            <CircleButton
+                            type={ButtonType.DANGER}
+                            onClick={() => {}}
+                            icon="/icons/icon-menu.svg"
+                            customIconSize="w-[24px] h-[6px]"
+                        />
+                        }
+                        items={[
+                            {
+                                label: t("edit"),
+                                onClick: () => handleEdit(),
+                                icon: "/icons/icon-edit-1.svg"
+                            },
+                            {
+                                label: t("saveToFolder"),
+                                onClick: () => openSaveToFolder(),
+                                icon: "/icons/icon-folder.svg"
+                            },
+                            {
+                                label: t("delete"),
+                                onClick: () => setIsDeleteConfirmationModalOpen(true),
+                                icon: "/icons/icon-module-1.svg"
+                            }
+                        ]}
                     />
                 </div>
                 {cards.length > 0 && (
@@ -116,7 +200,7 @@ const ModuleContentView = ({
                         label={t("takeTest")}
                         size={ButtonSize.NORMAL}
                         type={ButtonType.SECONDARY}
-                        onClick={() => handleStartTest(moduleId)}
+                        onClick={() => setIsTestSettingModalOpen(true)}
                     />
                 </div>
 
@@ -171,6 +255,50 @@ const ModuleContentView = ({
                     </div>
                 </Modal>
             }
+
+            {isSaveToFolderModalOpen && (
+                <Modal
+                    title={t("saveToFolder")}
+                    titleAlign={ModalTitleAlignment.LEFT}
+                    onClose={() => setIsSaveToFolderModalOpen(false)}
+                >
+                    <ChecklistView
+                        items={folders}
+                        selected={selectedFolders}
+                        setSelected={setSelectedFolders}
+                        onSubmit={handleSubmitFoldersToModule}
+                        placeholder={t("createNewFolder")}
+                    />
+                </Modal>
+            )}
+
+            {isDeleteConfirmationModalOpen && (
+                <Modal
+                    title={t("deleteConfirmation")}
+                    onClose={() => setIsDeleteConfirmationModalOpen(false)}
+                >
+                    <p className="font-content text-[var(--color-grey)] text-center ml-[20px] mr-[40px] mb-[30px]">{t("deleteDetails")}</p>
+                    <div className="flex items-center justify-center gap-[20px]">
+                        <Button
+                            label={t("back")}
+                            size={ButtonSize.NORMAL}
+                            type={ButtonType.STROKE}
+                            htmlType="button"
+                            onClick={() => setIsDeleteConfirmationModalOpen(false)}
+                        />
+                        <Button
+                            label={t("delete")}
+                            size={ButtonSize.NORMAL}
+                            type={ButtonType.DANGER}
+                            htmlType="button"
+                            onClick={() => {
+                                handleDelete();
+                                setIsDeleteConfirmationModalOpen(false);
+                            }}
+                        />
+                    </div>
+                </Modal>
+            )}
         </>
     );
 };

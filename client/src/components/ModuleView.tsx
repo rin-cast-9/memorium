@@ -13,6 +13,7 @@ type ModuleViewProps = {
     onEdit: (id: number) => void;
     onSaveToFolderModal: (id: number) => void;
     onDelete: (id: number) => void;
+    showOptions?: boolean;
 }
 
 const ModuleView = ({
@@ -21,6 +22,7 @@ const ModuleView = ({
     onEdit,
     onSaveToFolderModal,
     onDelete,
+    showOptions = true
 }: ModuleViewProps) => {
     const t = useTranslations();
     const router = useRouter();
@@ -62,30 +64,32 @@ const ModuleView = ({
                     <div className="h-[22px] w-px bg-[var(--color-stroke)]"/>
                     <p className="font-content text-[var(--color-grey)]">{count} {t("termsCount")}</p>
                 </div>
-                <DropdownMenu
-                    trigger={
-                        <button>
-                            <img src="/icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px]"/>
-                        </button>
-                    }
-                    items={[
-                        {
-                            label: t("edit"),
-                            onClick: () => onEdit(id),
-                            icon: "/icons/icon-edit-1.svg"
-                        },
-                        {
-                            label: t("saveToFolder"),
-                            onClick: () => onSaveToFolderModal(id),
-                            icon: "/icons/icon-folder.svg"
-                        },
-                        {
-                            label: t("delete"),
-                            onClick: () => setIsDeleteConfirmationModalOpen(true),
-                            icon: "/icons/icon-module-1.svg"
+                {showOptions && (
+                    <DropdownMenu
+                        trigger={
+                            <button>
+                                <img src="/icons/icon-edit.svg" alt="edit" className="w-[16px] h-[16px]"/>
+                            </button>
                         }
-                    ]}
-                />
+                        items={[
+                            {
+                                label: t("edit"),
+                                onClick: () => onEdit(id),
+                                icon: "/icons/icon-edit-1.svg"
+                            },
+                            {
+                                label: t("saveToFolder"),
+                                onClick: () => onSaveToFolderModal(id),
+                                icon: "/icons/icon-folder.svg"
+                            },
+                            {
+                                label: t("delete"),
+                                onClick: () => setIsDeleteConfirmationModalOpen(true),
+                                icon: "/icons/icon-module-1.svg"
+                            }
+                        ]}
+                    />
+                )}
             </div>
             {isDeleteConfirmationModalOpen && (
                 <Modal

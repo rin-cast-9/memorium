@@ -92,6 +92,7 @@ const FolderContentView = ({
                 onEdit={() => {}}
                 onSaveToFolderModal={() => {}}
                 onDelete={() => {}}
+                showOptions={false}
             />
         
             {isAddToFolderModalOpen && (

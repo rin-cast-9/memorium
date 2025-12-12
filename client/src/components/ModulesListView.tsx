@@ -11,6 +11,7 @@ type ModulesListViewProps = {
     onEdit: (id: number) => void;
     onSaveToFolderModal: (id: number) => void;
     onDelete: (id: number) => void;
+    showOptions?: boolean;
 };
 
 const ModulesListView = ({
@@ -19,6 +20,7 @@ const ModulesListView = ({
     onEdit,
     onSaveToFolderModal,
     onDelete,
+    showOptions = true
 }: ModulesListViewProps) => {
     const t = useTranslations();
 
@@ -42,6 +44,7 @@ const ModulesListView = ({
                     onEdit={onEdit}
                     onSaveToFolderModal={onSaveToFolderModal}
                     onDelete={onDelete}
+                    showOptions={showOptions}
                 />
             ))}
         </div>
