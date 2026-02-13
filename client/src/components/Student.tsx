@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { useTranslations } from "next-intl";
+import { apiUrl } from "@/utils/api";
+import { logoutApi } from "@/utils/auth.api";
 
 const Student = () => {
     const t = useTranslations();
@@ -34,9 +36,9 @@ const Student = () => {
         setShowLogout(prev => !prev);
     };
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
+    const logout = async () => {
+        await logoutApi();
+        
         window.location.href = "/auth";
     };
 

@@ -137,12 +137,8 @@ func (s *FolderService) RemoveFolderFromModule(userID, folderID, moduleID int) e
 }
 
 func (s *FolderService) UpdateFolderModules(userID, folderID int, moduleMap map[int]bool) error {
-	folder, err := s.folderRepo.GetFolderByID(userID, folderID)
+	_, err := s.folderRepo.GetFolderByID(userID, folderID)
 	if err != nil {
-		return err
-	}
-
-	if folder == nil {
 		return util.NewPublicError(util.ErrCodeNotFound, "folder not found or unauthorized")
 	}
 

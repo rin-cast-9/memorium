@@ -3,8 +3,10 @@ package db
 import (
 	"os"
 
+	"github.com/rin-cast-9/memorium/server/internal/model"
 	"github.com/rin-cast-9/memorium/server/internal/util"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -36,4 +38,26 @@ func Init() (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func InitTestDB() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic(err)
+	}
+
+	sqlDB.SetMaxOpenConns(1)
+	sqlDB.SetMaxIdleConns(1)
+	sqlDB.SetConnMaxLifetime(0)
+
+	if err := db.AutoMigrate(&model.User{}, &model.RefreshToken{}); err != nil {
+		panic(err)
+	}
+
+	return db
 }

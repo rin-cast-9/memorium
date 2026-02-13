@@ -6,10 +6,13 @@ import AuthTabsComponent from "./AuthTabsComponent";
 import SignupTab from "./SignupTab";
 import LoginTab from "./LoginTab";
 import { useTranslations } from "next-intl";
-import { apiUrl, ERROR_CODES, parseApiResponse } from "@/utils/api";
+import { ERROR_CODES } from "@/utils/api";
+import { loginApi, registerApi } from "@/utils/auth.api";
+import { useRouter } from "next/navigation";
 
 const AuthForm = () => {
     const t = useTranslations();
+    const router = useRouter();
 
     const [activeTab, setActiveTab] = useState(AuthTabs.SIGNUP);
     const [email, setEmail] = useState("");
@@ -25,31 +28,23 @@ const AuthForm = () => {
         setFullNameError(null);
         setEmailError(null);
 
-        type RegisterResponse = {};
-        const response = await fetch(`${apiUrl}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, fullname, password }),
-        });
-
-        const { error } = await parseApiResponse<RegisterResponse>(response);
+        const { error } = await registerApi(email, fullname, password);
 
         if (error) {
-            switch (error.error) {
+            switch (error.message) {
                 case ERROR_CODES.FULL_NAME_EMPTY:
                 case ERROR_CODES.FULL_NAME_TOO_SHORT:
                 case ERROR_CODES.FULL_NAME_TOO_LONG:
                 case ERROR_CODES.FULL_NAME_INVALID_CHARACTERS:
-                    setFullNameError(t(`errors.${error.error}`));
+                    setFullNameError(t(`errors.${error.message}`));
                     break;
 
                 case ERROR_CODES.USER_EXISTS:
-                    setEmailError(t(`errors.${error.error}`));
+                    setEmailError(t(`errors.${error.message}`));
                     break;
 
                 default:
-                    alert("Unknown error: " + error.error);
-                    break;
+                    router.replace("/error");
             }
             return;
         }
@@ -63,31 +58,17 @@ const AuthForm = () => {
         await login(email, password);
     };
 
-    const login = async (email: string, password: string): Promise<boolean> => {
-        const response = await fetch(`${apiUrl}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
-
-        type TokenResponse = { token: string; username: string; };
-
-        const { data, error } = await parseApiResponse<TokenResponse>(response);
+    const login = async (email: string, password: string) => {
+        const { data, error } = await loginApi(email, password);
 
         if (error) {
-            setLoginError(t(`errors.${error.error}`));
-            return false;
+            setLoginError(t(`errors.${error.message}`));
+            return;
         }
 
-        if (data) {
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("username", data.username);
-            window.location.href = "/library";
-            return true;
-        }
+        localStorage.setItem("username", data?.username ?? "");
 
-        setLoginError(t(`errors.${ERROR_CODES.INTERNAL_SERVER_ERROR}`));
-        return false;
+        router.replace("/library");
     };
 
     return (

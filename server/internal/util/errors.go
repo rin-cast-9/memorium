@@ -1,5 +1,9 @@
 package util
 
+import (
+	"errors"
+)
+
 type AppError struct {
 	Code     string `json:"code"`
 	Message  string `json:"message"`
@@ -27,15 +31,33 @@ func NewInternalError(code string, err error) *AppError {
 	}
 }
 
+var (
+	ErrInvalidFullName              = errors.New("invalid full name")
+	ErrFullNameEmpty                = errors.New("full name is empty")
+	ErrFullNameTooLong              = errors.New("full name is too long")
+	ErrFullNameTooShort             = errors.New("full name is too short")
+	ErrFullNameInvalidChars         = errors.New("full name contains invalid characters")
+	ErrNotFound                     = errors.New("data not found")
+	ErrUserExists                   = errors.New("user already exists")
+	ErrPasswordHashingFailed        = errors.New("password hashing failed")
+	ErrUserCreationFailed           = errors.New("user creation failed")
+	ErrInvalidCredentials           = errors.New("invalid credentials")
+	ErrRefreshTokenGenerationFailed = errors.New("refresh token generation failed")
+	ErrAccessTokenGenerationFailed  = errors.New("access token generation failed")
+	ErrInvalidRefreshToken          = errors.New("invalid refresh token")
+)
+
 const (
 	ErrCodeUserExists                        = "USER_EXISTS"
+	ErrCodeInvalidFullName                   = "INVALID_FULL_NAME"
 	ErrCodeFullNameEmpty                     = "FULL_NAME_EMPTY"
 	ErrCodeFullNameTooShort                  = "FULL_NAME_TOO_SHORT"
 	ErrCodeFullNameTooLong                   = "FULL_NAME_TOO_LONG"
-	ErrCodeFullNameInvalidChars              = "FULL_NAME_INVALID_CHARACTERS"
+	ErrCodeFullNameInvalidCharacters         = "FULL_NAME_INVALID_CHARACTERS"
 	ErrCodeInvalidCredentials                = "INVALID_CREDENTIALS"
 	ErrCodePasswordHashingFailed             = "PASSWORD_HASHING_FAILED"
 	ErrCodeTokenGenerationFailed             = "TOKEN_GENERATION_FAILED"
+	ErrCodeRefreshTokenGenerationFailed      = "REFRESH_TOKEN_GENERATION_FAILED"
 	ErrCodeUserCreationFailed                = "USER_CREATION_FAILED"
 	ErrCodeInternalServerError               = "INTERNAL_SERVER_ERROR"
 	ErrCodeInvalidRequest                    = "INVALID_REQUEST"
@@ -67,6 +89,8 @@ const (
 	ErrCodeCardUpdateFailed                  = "CARD_UPDATE_FAILED"
 	ErrCodeProgressRetrievalFailed           = "PROGRESS_RETRIEVAL_FAILED"
 	ErrCodeDBTransactionFailed               = "DB_TRANSACTION_FAILED"
+	ErrCodeDBError                           = "DB_ERROR"
+	ErrCodeDBWriteFailed                     = "DB_WRITE_FAILED"
 	ErrCodeProgressUpdateFailed              = "PROGRESS_UPDATE_FAILED"
 	ErrCodeProgressCreationFailed            = "PROGRESS_CREATION_FAILED"
 	ErrCodeTestCreationFailed                = "TEST_CREATION_FAILED"
@@ -74,4 +98,9 @@ const (
 	ErrCodeTestRetrievalFailed               = "TEST_RETRIEVAL_FAILED"
 	ErrCodeTestDeletionFailed                = "TEST_DELETION_FAILED"
 	ErrCodeForbidden                         = "FORBIDDEN"
+	ErrCodeMissingRefreshToken               = "MISSING_REFRESH_TOKEN"
+	ErrCodeRevokedRefreshToken               = "REVOKED_REFRESH_TOKEN"
+	ErrCodeExpiredRefreshToken               = "EXPIRED_REFRESH_TOKEN"
+	ErrCodeInvalidRefreshToken               = "INVALID_REFRESH_TOKEN"
+	ErrCodeRefreshTokenRevokationFailed      = "REFRESH_TOKEN_REVOKATION_FAILED"
 )

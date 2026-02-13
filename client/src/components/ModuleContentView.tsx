@@ -1,6 +1,5 @@
 "use client";
 
-import { createFolderApi, deleteFolderApi, deleteModuleApi, getModuleApi, getProgressByModuleApi, listCardsByModuleApi, listFoldersApi, listFoldersByModuleApi, startReviewApi, startTestApi, updateFolderModulesApi, updateModuleFoldersApi } from "@/utils/ApiRequests";
 import { Card } from "@/utils/Card";
 import { Module } from "@/utils/Module";
 import { useEffect, useState } from "react";
@@ -18,6 +17,9 @@ import ToggleSwitch from "./ToggleSwitch";
 import DropdownMenu from "./DropdownMenu";
 import ChecklistView from "./ChecklistView";
 import { Folder } from "@/utils/Folder";
+import { getProgressByModuleApi, listCardsByModuleApi } from "@/utils/ApiRequests";
+import { createFolderApi, listFoldersApi, listFoldersByModuleApi } from "@/utils/folder.api";
+import { deleteModuleApi, updateModuleFoldersApi } from "@/utils/module.api";
 
 type ModuleContentViewProps = {
     moduleId: number;

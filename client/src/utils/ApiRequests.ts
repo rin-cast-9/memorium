@@ -1,5 +1,5 @@
 import { Answer } from "./Answer";
-import { apiUrl, parseApiResponse } from "./api";
+import { apiUrl, baseUrl, ERROR_CODES, parseApiResponse } from "./api";
 import { CardApi } from "./Card";
 import { FinishedTestSummary } from "./FinishedTestSummary";
 import { Folder } from "./Folder";
@@ -7,153 +7,106 @@ import { Module, ModuleCount } from "./Module";
 import { ReviewResult } from "./ReviewResult";
 import { StartReviewResponse } from "./StartReviewRequest";
 import { StartTestResponse } from "./StartTestResponse";
-
-const getAuthToken = () => localStorage.getItem("token") || "";
+import { redirect } from "next/navigation";
 
 const apiFetch = async (url: string, options: RequestInit = {}) => {
-    const token = getAuthToken();
     const headers = {
         "Content-Type": "application/json",
         ...(options.headers || {}),
-        Authorization: token ? `Bearer ${token}` : "",
     };
 
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, { ...options, headers, credentials: "include" });
     return response;
 };
 
-export const createFolderApi = async (displayName: string) => {
-    const response = await apiFetch(`${apiUrl}/folders`, {
+export const browserFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
+
+    const res = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include",
+    });
+
+    if (res.status !== 401) {
+        return res;
+    }
+
+    const refresh = await fetch(`${apiUrl}/refresh`, {
         method: "POST",
-        body: JSON.stringify({ display_name: displayName }),
+        credentials: "include",
     });
 
-    return parseApiResponse<Folder>(response);
+    if (!refresh.ok) {
+        window.location.href = "/auth";
+        return new Response(JSON.stringify({ error: {message: ERROR_CODES.UNAUTHENTICATED, code: 401 } }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    return fetch(url, {
+        ...options,
+        headers,
+        credentials: "include",
+    });
 };
 
-export const deleteFolderApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
-        method: "DELETE",
+export const serverFetch = async (url: string, cookie: string, options: RequestInit = {}) => {
+    let res = await fetch(url, {
+        ...options,
+        headers: { Cookie: cookie },
+        cache: "no-store",
     });
 
-    return parseApiResponse<{}>(response);
-};
+    if (res.status !== 401) {
+        return res;
+    }
 
-export const renameFolderApi = async (id: number, newDisplayName: string) => {
-    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ new_display_name: newDisplayName }),
-    });
-
-    return parseApiResponse<Folder>(response);
-};
-
-export const listFoldersApi = async () => {
-    const response = await apiFetch(`${apiUrl}/folders`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<Folder[]>(response);
-};
-
-export const getFolderApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/folders/${id}`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<Folder>(response);
-};
-
-export const listFoldersByModuleApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/modules/${id}/folders`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<number[]>(response);
-};
-
-export const createModuleApi = async (displayName: string) => {
-    const response = await apiFetch(`${apiUrl}/modules`, {
+    const refresh = await fetch(`${apiUrl}/refresh`, {
         method: "POST",
-        body: JSON.stringify({ display_name: displayName }),
+        headers: { Cookie: cookie },
+        cache: "no-store",
     });
 
-    return parseApiResponse<Module>(response);
+    if (!refresh.ok) {
+        redirect("/auth");
+    }
+
+    return fetch(url, {
+        ...options,
+        headers: { Cookie: cookie },
+        cache: "no-store",
+    });
 };
 
-export const deleteModuleApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/modules/${id}`, {
-        method: "DELETE",
-    });
+const fetchWithRefresh = async (url: string, options: RequestInit = {}) => {
+    const response = await apiFetch(url, options);
 
-    return parseApiResponse<{}>(response);
-};
+    if (response.status === 401) {
+        const refreshResponse = await apiFetch(`${apiUrl}/refresh`, {
+            method: "POST",
+            headers: { "X-Refresh": "1" },
+            credentials: "include",
+        });
 
-export const renameModuleApi = async (id: number, newDisplayName: string) => {
-    const response = await apiFetch(`${apiUrl}/modules/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ new_display_name: newDisplayName }),
-    });
+        if (refreshResponse.ok) {
+            return apiFetch(url, options);
+        }
 
-    return parseApiResponse<Module>(response);
-};
+        if (typeof window !== "undefined") {
+            window.location.href = "/auth";
+        }
+    }
 
-export const getModuleApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/modules/${id}`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<Module>(response);
-};
-
-export const listModulesApi = async () => {
-    const response = await apiFetch(`${apiUrl}/modules`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<Module[]>(response);
-};
-
-export const listModulesByFolderApi = async (id: number) => {
-    const response = await apiFetch(`${apiUrl}/folders/${id}/modules`, {
-        method: "GET",
-    });
-
-    return parseApiResponse<number[]>(response);
-};
-
-export const updateFolderModulesApi = async (id: number, modulesByFolderMap: Map<number, boolean>) => {
-    const moduleMap: Record<number, boolean> = {};
-
-    modulesByFolderMap.forEach((selected, moduleId) => {
-        moduleMap[moduleId] = selected;
-    });
-
-    const response = await apiFetch(`${apiUrl}/folders/${id}/modules`, {
-        method: "PUT",
-        body: JSON.stringify({ module_map: moduleMap }),
-    });
-
-    return parseApiResponse<{}>(response);
-};
-
-export const updateModuleFoldersApi = async (id: number, foldersByModuleMap: Map<number, boolean>) => {
-    const folderMap: Record<number, boolean> = {};
-
-    foldersByModuleMap.forEach((selected, folderId) => {
-        folderMap[folderId] = selected;
-    });
-
-    const response = await apiFetch(`${apiUrl}/modules/${id}/folders`, {
-        method: "PUT",
-        body: JSON.stringify({ folder_map: folderMap })
-    });
-
-    return parseApiResponse<{}>(response);
+    return response;
 };
 
 export const listCardsByModuleApi = async (moduleId: number) => {
-    const response = await apiFetch(`${apiUrl}/cards/module/${moduleId}`, {
+    const response = await fetchWithRefresh(`${apiUrl}/cards/module/${moduleId}`, {
         method: "GET"
     });
 
@@ -169,7 +122,7 @@ export const countCardsByModuleApi = async (moduleId: number) => {
 };
 
 export const getCardApi = async (cardId: number) => {
-    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+    const response = await fetchWithRefresh(`${apiUrl}/cards/${cardId}`, {
         method: "GET"
     });
 
@@ -177,7 +130,7 @@ export const getCardApi = async (cardId: number) => {
 };
 
 export const createCardApi = async (moduleId: number, front: string, back: string) => {
-    const response = await apiFetch(`${apiUrl}/cards`, {
+    const response = await fetchWithRefresh(`${apiUrl}/cards`, {
         method: "POST",
         body: JSON.stringify({ module_id: moduleId, front: front, back: back })
     });
@@ -186,7 +139,7 @@ export const createCardApi = async (moduleId: number, front: string, back: strin
 };
 
 export const deleteCardApi = async (cardId: number) => {
-    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+    const response = await fetchWithRefresh(`${apiUrl}/cards/${cardId}`, {
         method: "DELETE"
     });
 
@@ -194,7 +147,7 @@ export const deleteCardApi = async (cardId: number) => {
 };
 
 export const editCardApi = async (cardId: number, front: string, back: string) => {
-    const response = await apiFetch(`${apiUrl}/cards/${cardId}`, {
+    const response = await fetchWithRefresh(`${apiUrl}/cards/${cardId}`, {
         method: "PUT",
         body: JSON.stringify({ front: front, back: back })
     });
@@ -203,7 +156,7 @@ export const editCardApi = async (cardId: number, front: string, back: string) =
 };
 
 export const startTestApi = async (moduleId: number, isReviewOnly: boolean) => {
-    const response = await apiFetch(`${apiUrl}/test/start`, {
+    const response = await fetchWithRefresh(`${apiUrl}/test/start`, {
         method: "POST",
         body: JSON.stringify({
             module_id: moduleId,
@@ -215,7 +168,7 @@ export const startTestApi = async (moduleId: number, isReviewOnly: boolean) => {
 };
 
 export const finishTestApi = async (testId: number, answers: Answer[]) => {
-    const response = await apiFetch(`${apiUrl}/test/${testId}/finish`, {
+    const response = await fetchWithRefresh(`${apiUrl}/test/${testId}/finish`, {
         method: "POST",
         body: JSON.stringify({ answers }),
     });
@@ -224,7 +177,7 @@ export const finishTestApi = async (testId: number, answers: Answer[]) => {
 };
 
 export const startReviewApi = async (moduleId: number, reviewType: number) => {
-    const response = await apiFetch(`${apiUrl}/review/start`, {
+    const response = await fetchWithRefresh(`${apiUrl}/review/start`, {
         method: "POST",
         body: JSON.stringify({
             module_id: moduleId,
@@ -236,7 +189,7 @@ export const startReviewApi = async (moduleId: number, reviewType: number) => {
 };
 
 export const finishReviewApi = async (moduleId: number, results: ReviewResult[]) => {
-    const response = await apiFetch(`${apiUrl}/review/${moduleId}/finish`, {
+    const response = await fetchWithRefresh(`${apiUrl}/review/${moduleId}/finish`, {
         method: "POST",
         body: JSON.stringify({ review_results: results }),
     });
@@ -245,7 +198,7 @@ export const finishReviewApi = async (moduleId: number, results: ReviewResult[])
 };
 
 export const getProgressByModuleApi = async (moduleId: number) => {
-    const response = await apiFetch(`${apiUrl}/progress/${moduleId}`, {
+    const response = await fetchWithRefresh(`${apiUrl}/progress/${moduleId}`, {
         method: "GET",
     });
 

@@ -15,7 +15,7 @@ type FolderViewProps = {
     id: number;
     displayName: string;
     onDelete: (id: number) => void;
-    onRename: (id: number, newDisplayName: string) => Promise<ErrorCode | undefined>;
+    onRename: (id: number, newDisplayName: string) => Promise<string | undefined>;
 };
 
 const FolderView = ({

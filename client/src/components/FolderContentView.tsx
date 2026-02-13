@@ -8,10 +8,11 @@ import Button from "./Button";
 import { ButtonSize, ButtonType } from "@/utils/Button.types";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/utils/Folder";
-import { createModuleApi, getFolderApi, getModuleApi, listModulesApi, listModulesByFolderApi, updateFolderModulesApi } from "@/utils/ApiRequests";
 import ModulesListView from "./ModulesListView";
 import { Module } from "@/utils/Module";
 import ChecklistView from "./ChecklistView";
+import { getFolderApi, updateFolderModulesApi } from "@/utils/folder.api";
+import { createModuleApi, listModulesApi, listModulesByFolderApi } from "@/utils/module.api";
 
 type FolderContentViewProps = {
     folderId: number;

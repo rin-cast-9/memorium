@@ -6,6 +6,15 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    token_hash CHAR(64) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    revoked BOOLEAN DEFAULT false
+);
+
 CREATE TABLE folders (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),

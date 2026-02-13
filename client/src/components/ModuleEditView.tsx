@@ -7,9 +7,10 @@ import ModuleName from "./ModuleName";
 import { useState } from "react";
 import { Card, CardApi } from "@/utils/Card";
 import { Module } from "@/utils/Module";
-import { createCardApi, createModuleApi, deleteCardApi, editCardApi } from "@/utils/ApiRequests";
+import { createCardApi, deleteCardApi, editCardApi } from "@/utils/ApiRequests";
 import { useRouter } from "next/navigation";
 import CardGridEditView from "./CardGridEditView";
+import { createModuleApi } from "@/utils/module.api";
 
 type ModuleEditViewProps = {
     existingModule?: Module;

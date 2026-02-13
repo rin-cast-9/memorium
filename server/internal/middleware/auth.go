@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rin-cast-9/memorium/server/internal/util"
@@ -11,21 +10,13 @@ import (
 
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			util.Logger.Warn("Missing Authorization header")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
+		tokenStr, err := c.Cookie("access_token")
+		if err != nil || tokenStr == "" {
+			util.Logger.Warn("missing access token cookie")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing access token"})
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			util.Logger.Warn("Invalid Authorization header format", zap.String("header", authHeader))
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-			return
-		}
-
-		tokenStr := parts[1]
 		claims, err := util.ParseToken(tokenStr)
 		if err != nil {
 			util.Logger.Warn("Invalid or expired token", zap.Error(err))

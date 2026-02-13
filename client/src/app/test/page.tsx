@@ -6,9 +6,9 @@ import { useSearchParams } from "next/navigation";
 const TestPage = () => {
     const params = useSearchParams();
     const moduleId = params.get("moduleId");
-    const isReviewOnly = params.get("isReviewOnly");
+    const isReviewOnly = params.get("isReviewOnly") === "true";
 
-    if (!moduleId || !isReviewOnly) {
+    if (!moduleId) {
         return <p>Invalid parameters</p>;
     }
 

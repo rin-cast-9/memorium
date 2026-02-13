@@ -17,14 +17,15 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Refresh"},
 		AllowCredentials: true,
 	}))
 
 	util.Logger.Info("CORS middleware configured")
 
 	userRepo := repo.NewUserRepo(db)
-	authService := service.NewAuthService(userRepo)
+	authRepo := repo.NewAuthRepo(db)
+	authService := service.NewAuthService(userRepo, authRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
 	folderRepo := repo.NewFolderRepo(db)
@@ -54,6 +55,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	router.GET("/ping", middleware.JWTAuthMiddleware(), handler.PingHandler(db))
 	router.POST("/register", authHandler.Register)
 	router.POST("/login", authHandler.Login)
+	router.POST("/refresh", authHandler.Refresh)
+	router.POST("/logout", authHandler.Logout)
 
 	folderRoutes := router.Group("/folders", middleware.JWTAuthMiddleware())
 	{

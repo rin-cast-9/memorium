@@ -1,6 +1,10 @@
 package service
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -8,32 +12,33 @@ import (
 	"github.com/rin-cast-9/memorium/server/internal/model"
 	"github.com/rin-cast-9/memorium/server/internal/repo"
 	"github.com/rin-cast-9/memorium/server/internal/util"
-	"go.uber.org/zap"
 )
 
 type AuthService struct {
 	userRepo repo.UserRepo
+	authRepo repo.AuthRepo
 }
 
-func NewAuthService(userRepo repo.UserRepo) *AuthService {
-	return &AuthService{userRepo: userRepo}
+func NewAuthService(userRepo repo.UserRepo, authRepo repo.AuthRepo) *AuthService {
+	return &AuthService{userRepo: userRepo, authRepo: authRepo}
 }
 
 func (s *AuthService) Register(email, fullName, password string) error {
 	if err := validateFullName(fullName); err != nil {
-		util.Logger.Warn("Invalid full name", zap.String("fullname", fullName), zap.Error(err))
 		return err
 	}
 
-	if _, err := s.userRepo.GetByEmail(email); err == nil {
-		util.Logger.Warn("Attempt to register existing user", zap.String("email", email))
-		return util.NewPublicError(util.ErrCodeUserExists, "User with this email already exists")
+	_, err := s.userRepo.GetByEmail(email)
+	if err == nil {
+		return util.ErrUserExists
+	}
+	if !errors.Is(err, util.ErrNotFound) {
+		return err
 	}
 
 	hash, err := util.HashPassword(password)
 	if err != nil {
-		util.Logger.Error("Password hashing failed", zap.Error(err))
-		return util.NewInternalError(util.ErrCodePasswordHashingFailed, err)
+		return util.ErrPasswordHashingFailed
 	}
 
 	user := &model.User{
@@ -43,33 +48,91 @@ func (s *AuthService) Register(email, fullName, password string) error {
 	}
 
 	if err := s.userRepo.CreateUser(user); err != nil {
-		util.Logger.Error("User creation failed", zap.Error(err))
-		return util.NewInternalError(util.ErrCodeUserCreationFailed, err)
+		return err
 	}
 
 	return nil
 }
 
-func (s *AuthService) Login(email, password string) (token, username string, err error) {
+func (s *AuthService) Login(email, password string) (username, accessToken, refreshToken string, err error) {
 	user, err := s.userRepo.GetByEmail(email)
+	if err != nil || user == nil {
+		return "", "", "", util.ErrInvalidCredentials
+	}
+
+	err = util.CheckPassword(user.PasswordHash, password)
 	if err != nil {
-		util.Logger.Warn("Login failed: user not found", zap.String("email", email))
-		return "", "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
+		return "", "", "", util.ErrInvalidCredentials
 	}
 
-	if util.CheckPassword(user.PasswordHash, password) != nil {
-		util.Logger.Warn("Login failed: wrong password", zap.String("email", email))
-		return "", "", util.NewPublicError(util.ErrCodeInvalidCredentials, "Invalid email or password")
-	}
-
-	token, err = util.GenerateToken(uint(user.ID), time.Hour)
+	raw, hashed, err := util.GenerateRefreshToken()
 	if err != nil {
-		util.Logger.Error("Token generation failed", zap.String("email", email), zap.Error(err))
-		return "", "", util.NewInternalError(util.ErrCodeTokenGenerationFailed, err)
+		return "", "", "", util.ErrRefreshTokenGenerationFailed
 	}
 
-	util.Logger.Info("User logged in", zap.String("email", email), zap.Uint("userID", uint(user.ID)))
-	return token, user.FullName, nil
+	accessToken, err = util.GenerateToken(uint(user.ID), time.Hour)
+	if err != nil {
+		return "", "", "", util.ErrAccessTokenGenerationFailed
+	}
+
+	err = s.authRepo.InsertToken(user.ID, hashed, time.Now().Add(30*24*time.Hour), false)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	return user.FullName, accessToken, raw, nil
+}
+
+func (s *AuthService) Refresh(refreshToken string) (accessToken, refreshTokenOut string, err error) {
+	sum := sha256.Sum256([]byte(refreshToken))
+	oldHash := hex.EncodeToString(sum[:])
+
+	storedToken, err := s.authRepo.GetRefreshTokenByHash(oldHash)
+	if err != nil {
+		if errors.Is(err, util.ErrNotFound) {
+			return "", "", util.ErrInvalidRefreshToken
+		}
+
+		return "", "", err
+	}
+
+	if storedToken.Revoked || time.Now().After(storedToken.ExpiresAt) {
+		return "", "", util.ErrInvalidRefreshToken
+	}
+
+	rawNew, newHash, err := util.GenerateRefreshToken()
+	if err != nil {
+		return "", "", util.ErrRefreshTokenGenerationFailed
+	}
+
+	accessToken, err = util.GenerateToken(uint(storedToken.UserID), time.Hour)
+	if err != nil {
+		return "", "", util.ErrAccessTokenGenerationFailed
+	}
+
+	err = s.authRepo.RotateRefreshToken(oldHash, storedToken.UserID, newHash, time.Now().Add(30*24*time.Hour))
+	if err != nil {
+		if errors.Is(err, util.ErrInvalidRefreshToken) {
+			return "", "", util.ErrInvalidRefreshToken
+		}
+
+		return "", "", err
+	}
+
+	return accessToken, rawNew, nil
+}
+
+func (s *AuthService) Logout(refreshToken string) error {
+	if refreshToken == "" {
+		return nil
+	}
+
+	sum := sha256.Sum256([]byte(refreshToken))
+	hashed := hex.EncodeToString(sum[:])
+
+	s.authRepo.RevokeToken(hashed)
+
+	return nil
 }
 
 func validateFullName(name string) error {
@@ -77,17 +140,16 @@ func validateFullName(name string) error {
 
 	switch {
 	case len(name) == 0:
-		return util.NewPublicError(util.ErrCodeFullNameEmpty, "Full name cannot be empty")
+		return fmt.Errorf("%w: %w", util.ErrInvalidFullName, util.ErrFullNameEmpty)
 	case len(name) > 100:
-		return util.NewPublicError(util.ErrCodeFullNameTooLong, "Full name too long")
+		return fmt.Errorf("%w: %w", util.ErrInvalidFullName, util.ErrFullNameTooLong)
 	case len([]rune(name)) < 2:
-		return util.NewPublicError(util.ErrCodeFullNameTooShort, "Full name too short")
+		return fmt.Errorf("%w: %w", util.ErrInvalidFullName, util.ErrFullNameTooShort)
 	}
 
 	var invalidChars = regexp.MustCompile(`[^\p{L}\p{M}\p{Zs}\-']`)
-
 	if invalidChars.MatchString(name) {
-		return util.NewPublicError(util.ErrCodeFullNameInvalidChars, "Full name contains invalid characters")
+		return fmt.Errorf("%w: %w", util.ErrInvalidFullName, util.ErrFullNameInvalidChars)
 	}
 
 	return nil

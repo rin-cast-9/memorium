@@ -11,23 +11,31 @@ import ValidatedInput from "./ValidatedInput";
 import FoldersListView from "./FoldersListView";
 import LibraryTabsComponent from "./LibraryTabsComponent";
 import { validateFolderDisplayName } from "@/utils/validators";
-import { createFolderApi, deleteFolderApi, deleteModuleApi, listFoldersApi, listFoldersByModuleApi, listModulesApi, renameFolderApi, updateModuleFoldersApi } from "@/utils/ApiRequests";
 import { Module } from "@/utils/Module";
 import ModulesListView from "./ModulesListView";
 import { useRouter } from "next/navigation";
 import ChecklistView from "./ChecklistView";
 import { ModalTitleAlignment } from "@/utils/ModalTitleAlignment";
+import { createFolderApi, deleteFolderApi, listFoldersByModuleApi, renameFolderApi } from "@/utils/folder.api";
+import { deleteModuleApi, updateModuleFoldersApi } from "@/utils/module.api";
 
-const LibraryView = () => {
+interface LibraryViewProps {
+    initialFolders: Folder[],
+    initialModules: Module[],
+};
+
+const LibraryView = ({
+    initialFolders,
+    initialModules
+}: LibraryViewProps) => {
     const t = useTranslations();
     const router = useRouter();
 
     const [activeTab, setActiveTab] = useState<LibraryTabs>(LibraryTabs.FOLDERS);
 
-    const [folders, setFolders] = useState<Folder[]>([]);
-    const [modules, setModules] = useState<Module[]>([]);
+    const [folders, setFolders] = useState<Folder[]>(initialFolders);
+    const [modules, setModules] = useState<Module[]>(initialModules);
     const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
 
     const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
     const [foldersByModule, setFoldersByModule] = useState<number[]>([]);
@@ -42,7 +50,7 @@ const LibraryView = () => {
             const { data, error } = await createFolderApi(displayName);
 
             if (error) {
-                setFolderDisplayNameError(t(`errors.${error.error}`));
+                setFolderDisplayNameError(t(`errors.${error.message}`));
             } else if (data) {
                 setFolders(prev => [...prev, data]);
             }
@@ -70,7 +78,7 @@ const LibraryView = () => {
             const { data, error } = await renameFolderApi(id, newDisplayName);
 
             if (error) {
-                return error.error;
+                return error.message;
             }
             
             if (data) {
@@ -100,42 +108,6 @@ const LibraryView = () => {
             alert(e);
         }
     };
-
-    useEffect(() => {
-        const fetchFolders = async () => {
-            setLoading(true);
-            try {
-                const { data, error } = await listFoldersApi();
-
-                if (error) {
-                    setFolders([]);
-                } else if (data) {
-                    setFolders(data);
-                }
-            }
-            finally {
-                setLoading(false);
-            }
-        };
-        const fetchModules = async () => {
-            setLoading(true);
-            try {
-                const { data, error } = await listModulesApi();
-                
-                if (error) {
-                    setModules([]);
-                } else if (data) {
-                    setModules(data);
-                }
-            }
-            finally {
-                setLoading(false);
-            }
-        };
-            
-        fetchFolders();
-        fetchModules();
-    }, [activeTab]);
 
     const openSaveToFolderModal = async (id: number) => {
         setActiveModuleId(id);
@@ -240,11 +212,7 @@ const LibraryView = () => {
                 </div>
 
                 <div className="mt-[20px]">
-                    {loading ? (
-                        <p className="text-[var(--color-grey)] font-content">{t("loading")}</p>
-                    ) : (
-                        renderTab(activeTab)
-                    )}
+                    {renderTab(activeTab)}
                 </div>
             </div>
             {isNewFolderModalOpen && (

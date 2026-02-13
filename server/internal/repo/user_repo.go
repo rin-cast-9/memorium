@@ -5,7 +5,6 @@ import (
 
 	"github.com/rin-cast-9/memorium/server/internal/model"
 	"github.com/rin-cast-9/memorium/server/internal/util"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -27,25 +26,20 @@ func (r *userRepo) GetByEmail(email string) (*model.User, error) {
 	err := r.db.Where("email = ?", email).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			util.Logger.Warn("User not found", zap.String("email", email))
-			return nil, errors.New("user not found")
+			return nil, util.ErrNotFound
 		}
 
-		util.Logger.Error("DB error on GetByEmail", zap.String("email", email), zap.Error(err))
 		return nil, err
 	}
 
-	util.Logger.Debug("User fetched", zap.String("email", email))
 	return &user, nil
 }
 
 func (r *userRepo) CreateUser(user *model.User) error {
 	err := r.db.Create(user).Error
 	if err != nil {
-		util.Logger.Error("Failed to create user", zap.String("email", user.Email), zap.Error(err))
-	} else {
-		util.Logger.Info("User created", zap.String("email", user.Email))
+		return err
 	}
 
-	return err
+	return nil
 }
